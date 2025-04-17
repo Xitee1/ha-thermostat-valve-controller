@@ -1,0 +1,25 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "temperature_sensor_entity_id": "Temperature sensor entity",
+                    "valve_entity_id": "Thermostat valve entity",
+                    "valve_min_position": "Minimum valve position",
+                    "valve_max_position": "Maximum valve position",
+                    "name": "Name"
+                },
+                "description": "Thermostat name"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "entity_id": "[%key:component::NEW_DOMAIN::config::step::user::description%]"
+                }
+            }
+        }
+    }
+}
