@@ -1,4 +1,5 @@
 # Home Assistant Thermostat Valve Controller
+Based on: https://github.com/Xitee1/home-assistant-custom-components-devcontainers-template
 
 Based on my AppDaemon script: https://github.com/Xitee1/AD-ThermostatController
 
