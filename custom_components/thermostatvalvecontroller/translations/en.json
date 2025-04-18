@@ -7,6 +7,7 @@
                     "valve_entity_id": "Thermostat valve entity",
                     "valve_min_position": "Minimum valve position",
                     "valve_max_position": "Maximum valve position",
+                    "min_cycle_duration": "Minimum cycle duration",
                     "name": "Name"
                 },
                 "description": "Thermostat name"

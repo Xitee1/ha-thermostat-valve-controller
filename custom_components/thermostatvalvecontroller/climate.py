@@ -2,6 +2,7 @@
 
 import logging
 import math
+from datetime import timedelta
 
 from homeassistant.components.climate import (
     ClimateEntity,
@@ -32,6 +33,8 @@ from homeassistant.helpers.device import async_device_info_to_link_from_entity
 from homeassistant.helpers.event import (
     async_track_state_change_event,
 )
+from homeassistant.exceptions import ConditionError
+from homeassistant.helpers import condition
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import (
@@ -44,6 +47,7 @@ from .const import (
     CONF_TARGET_TEMP_STEP,
     CONF_TEMPERATURE_SENSOR_ENTITY_ID,
     CONF_VALVE_ENTITY_ID,
+    CONF_MIN_CYCLE_DURATION,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -68,6 +72,8 @@ async def async_setup_entry(
     min_temp: float | None = config_entry.options.get(CONF_MIN_TEMP)
     max_temp: float | None = config_entry.options.get(CONF_MAX_TEMP)
     precision: float | None = config_entry.options.get(CONF_PRECISION)
+    min_cycle_duration: timedelta | None = config_entry.options.get(
+        CONF_MIN_CYCLE_DURATION)
     target_temp: float | None = config_entry.options.get(CONF_TARGET_TEMP)
     target_temp_step: float | None = config_entry.options.get(
         CONF_TARGET_TEMP_STEP)
@@ -94,6 +100,7 @@ async def async_setup_entry(
                 min_temp=min_temp,
                 max_temp=max_temp,
                 precision=precision,
+                min_cycle_duration=min_cycle_duration,
                 target_temp=target_temp,
                 target_temp_step=target_temp_step,
                 initial_hvac_mode=initial_hvac_mode,
@@ -104,7 +111,6 @@ async def async_setup_entry(
     )
 
 
-# TODO check what RestoreEntity does
 class ValveControllerClimate(ClimateEntity, RestoreEntity):
     """Representation of a Thermostat Valve Controller."""
 
@@ -122,6 +128,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         min_temp: float | None,
         max_temp: float | None,
         precision: float | None,
+        min_cycle_duration: timedelta | None,
         target_temp: float | None,
         target_temp_step: float | None,
         unit: UnitOfTemperature,
@@ -143,6 +150,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             self._attr_max_temp = max_temp
         if precision is not None:
             self._attr_precision = precision
+        self.min_cycle_duration = min_cycle_duration
         self._target_temp = target_temp
         self._saved_target_temp = target_temp or next(
             iter(presets.values()), None)
@@ -193,6 +201,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             ):
                 self._async_update_temp(sensor_state)
                 self.async_write_ha_state()
+
             valve_state = self.hass.states.get(self.valve_entity_id)
             if valve_state and valve_state.state not in (
                 STATE_UNAVAILABLE,
@@ -381,8 +390,27 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
     async def _async_control_heating(self, force: bool = False) -> None:
         """Control the valve position."""
         # TODO: Implement the logic to control the valve position
-        # TODO implement min cycle duration
-        # Ignore min cycle duration when force is True
+
+        # Check if we are allowed to control the valve
+        # TODO check what happens if the duration is not met and no more state changes happen.
+        #      This could cause the valve to be in the wrong state for a long time.
+        if not force and self.min_cycle_duration:
+            try:
+                # TODO ignore unavailable/unkown states
+                valve_state = self.hass.states.get(self.valve_entity_id)
+                long_enough = condition.state(
+                    hass=self.hass,
+                    entity=self.valve_entity_id,
+                    req_state=valve_state.state,
+                    for_period=self.min_cycle_duration,
+                )
+
+            except ConditionError:
+                long_enough = False
+
+            if not long_enough:
+                return
+
         _LOGGER.warning(
             "Valve control not implemented yet. Current temp: %s, Target temp: %s",
             self._current_temp,
