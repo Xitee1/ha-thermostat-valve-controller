@@ -3,14 +3,45 @@
         "step": {
             "user": {
                 "data": {
+                    "name": "Thermostat Name",
                     "temperature_sensor_entity_id": "Temperature sensor entity",
+                    "precision": "Temperature sensor precision",
                     "valve_entity_id": "Thermostat valve entity",
                     "valve_min_position": "Minimum valve position",
                     "valve_max_position": "Maximum valve position",
-                    "min_cycle_duration": "Minimum cycle duration",
-                    "name": "Name"
+                    "min_cycle_duration": "Minimum cycle duration"
                 },
-                "description": "Thermostat name"
+                "data_description": {
+                    "temperature_sensor_entity_id": "Entity ID of the temperature sensor",
+                    "precision": "Precision of the temperature sensor. Usually this is 0.1 or 1. Some sensors might have a higher accuracity and use 0.01",
+                    "valve_entity_id": "Entity ID of the valve position input",
+                    "valve_min_position": "Minimum position of the valve",
+                    "valve_max_position": "Maximum position of the valve. Usually the valve range is 0-100. Some thermostats like Eurotronic use 0-255",
+                    "min_cycle_duration": "Minimum cycle duration in seconds. Useful to prevent the valve from moving too often, reducing battery life."
+                }
+            },
+            "presets": {
+                "title": "Temperature presets",
+                "data": {
+                  "home_temp": "[%key:common::state::home%]",
+                  "away_temp": "[%key:common::state::not_home%]",
+                  "comfort_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::comfort%]",
+                  "eco_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::eco%]",
+                  "sleep_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::sleep%]",
+                  "activity_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::activity%]"
+                }
+            },
+            "thermostat": {
+                "data": {
+                    "min_temp": "Minimum temperature",
+                    "max_temp": "Maximum temperature",
+                    "target_temp_step": "Target temperature step"
+                },
+                "data_description": {
+                    "min_temp": "Minimum temperature that can be set",
+                    "max_temp": "Maximum temperature that can be set",
+                    "target_temp_step": "Increment by which the temperature can be adjusted"
+                }
             }
         }
     },
@@ -18,7 +49,43 @@
         "step": {
             "init": {
                 "data": {
-                    "entity_id": "[%key:component::NEW_DOMAIN::config::step::user::description%]"
+                    "temperature_sensor_entity_id": "Temperature sensor entity",
+                    "precision": "Precision of the temperature sensor",
+                    "valve_entity_id": "Thermostat valve entity",
+                    "valve_min_position": "Minimum valve position",
+                    "valve_max_position": "Maximum valve position",
+                    "min_cycle_duration": "Minimum cycle duration"
+                },
+                "data_description": {
+                    "temperature_sensor_entity_id": "Entity ID of the temperature sensor",
+                    "precision": "Precision of the temperature sensor. Usually this is 0.1 or 1. Some sensors might have a higher accuracity and use 0.01",
+                    "valve_entity_id": "Entity ID of the valve position input",
+                    "valve_min_position": "Minimum position of the valve",
+                    "valve_max_position": "Maximum position of the valve. Usually the valve range is 0-100. Some thermostats like Eurotronic use 0-255",
+                    "min_cycle_duration": "Minimum cycle duration in seconds. Useful to prevent the valve from moving too often, reducing battery life."
+                }
+            },
+            "presets": {
+                "title": "Temperature presets",
+                "data": {
+                  "home_temp": "[%key:common::state::home%]",
+                  "away_temp": "[%key:common::state::not_home%]",
+                  "comfort_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::comfort%]",
+                  "eco_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::eco%]",
+                  "sleep_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::sleep%]",
+                  "activity_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::activity%]"
+                }
+            },
+            "thermostat": {
+                "data": {
+                    "min_temp": "Minimum temperature",
+                    "max_temp": "Maximum temperature",
+                    "target_temp_step": "Target temperature step"
+                },
+                "data_description": {
+                    "min_temp": "Minimum temperature that can be set",
+                    "max_temp": "Maximum temperature that can be set",
+                    "target_temp_step": "Increment by which the temperature can be adjusted"
                 }
             }
         }
