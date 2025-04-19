@@ -41,6 +41,7 @@ from .const import (
     CONF_INITIAL_HVAC_MODE,
     CONF_MAX_TEMP,
     CONF_MIN_TEMP,
+    CONF_POSITION_MAPPING,
     CONF_PRECISION,
     CONF_PRESETS,
     CONF_TARGET_TEMP,
@@ -66,6 +67,9 @@ async def async_setup_entry(
     valve_entity_id: str = er.async_validate_entity_id(
         registry, config_entry.options[CONF_VALVE_ENTITY_ID]
     )
+    valve_position_mapping: dict[str, int] = config_entry.options.get(
+        CONF_POSITION_MAPPING, {}
+    )
     temp_sensor_entity_id: str = er.async_validate_entity_id(
         registry, config_entry.options[CONF_TEMPERATURE_SENSOR_ENTITY_ID]
     )
@@ -87,7 +91,19 @@ async def async_setup_entry(
         if value in config_entry.options
     }
 
-    # TODO Optionally validate config entry options before creating entity
+    # TODO add more and better validation
+
+    # Validate valve position mapping
+    if len(valve_position_mapping) == 0:
+        _LOGGER.error(
+            "Valve position mapping is empty! Please add your valve mappings."
+        )
+        return
+
+    # convert mapping keys to float and values to int
+    valve_position_mapping = {
+        float(k): int(v) for k, v in valve_position_mapping.items()
+    }
 
     async_add_entities(
         [
@@ -96,6 +112,7 @@ async def async_setup_entry(
                 name=name,
                 unique_id=unique_id,
                 valve_entity_id=valve_entity_id,
+                valve_position_mapping=valve_position_mapping,
                 temp_sensor_entity_id=temp_sensor_entity_id,
                 min_temp=min_temp,
                 max_temp=max_temp,
@@ -124,6 +141,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         name: str,
         unique_id: str,
         valve_entity_id: str,
+        valve_position_mapping: dict[str, int],
         temp_sensor_entity_id: str,
         min_temp: float | None,
         max_temp: float | None,
@@ -163,7 +181,11 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         self.valve_entity_id = valve_entity_id
         self.temp_sensor_entity_id = temp_sensor_entity_id
         self._current_temp: float | None = None
-        self._current_valve_position: int | None = None
+
+        self.valve_position_mapping = valve_position_mapping
+        self._sorted_valve_mapping_keys = sorted(self.valve_position_mapping.keys())
+        self._min_valve_position = min(self.valve_position_mapping.values())
+        self._max_valve_position = max(self.valve_position_mapping.values())
 
         self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
         if len(presets):
@@ -305,11 +327,11 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
     @property
     def hvac_action(self) -> HVACAction:
         """Return the current hvac operation."""
-        if self._hvac_mode == HVACMode.OFF:
-            return HVACAction.OFF
-
         if self._is_device_active:
             return HVACAction.HEATING
+
+        if self._hvac_mode == HVACMode.OFF:
+            return HVACAction.OFF
 
         return HVACAction.IDLE
 
@@ -320,9 +342,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             return None
 
         try:
-            # Any value above 0 means the valve is at least partially open
-            valve_value = float(valve_state.state)
-            return valve_value > 0
+            return float(valve_state.state) > float(self._min_valve_position)
         except (ValueError, TypeError):
             _LOGGER.error("Failed to parse valve state: %s", valve_state.state)
             return None
@@ -391,17 +411,27 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         """Control the valve position."""
         # TODO: Implement the logic to control the valve position
 
-        # Check if we are allowed to control the valve
-        # TODO check what happens if the duration is not met and no more state changes happen.
-        #      This could cause the valve to be in the wrong state for a long time.
+        # TODO If we do not update the valve because the cycle was not long enough,
+        #      it will stay in the same state until the next state update, which can be a long time
+
+        # TODO need to check hvac mode?
+
+        # TODO add emergency valve position
+        #      (a position that doesn't let the room to cool to freezing temps but also
+        #       makes no sauna club if temperature sensor is unavailable)
+
+        current_valve_state = self.hass.states.get(self.valve_entity_id)
+        # TODO check if unavailable/unknown state
+        current_valve_position = current_valve_state.state
+
+        # Check if we are in the min cycle duration, skip updating valve if so.
         if not force and self.min_cycle_duration:
             try:
                 # TODO ignore unavailable/unkown states
-                valve_state = self.hass.states.get(self.valve_entity_id)
                 long_enough = condition.state(
                     hass=self.hass,
                     entity=self.valve_entity_id,
-                    req_state=valve_state.state,
+                    req_state=current_valve_position,
                     for_period=self.min_cycle_duration,
                 )
 
@@ -411,8 +441,51 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             if not long_enough:
                 return
 
-        _LOGGER.warning(
-            "Valve control not implemented yet. Current temp: %s, Target temp: %s",
-            self._current_temp,
-            self._target_temp,
+        def calculate_valve_position(current_temp, target_temp) -> int:
+            """Calculate the valve position based on the current and target temperature."""
+            temp_difference = round(target_temp - current_temp, 1)
+
+            # Handle cases outside the defined range
+            if temp_difference <= self._sorted_valve_mapping_keys[0]:
+                # Return minimum value
+                return self._min_valve_position
+
+            if temp_difference >= self._sorted_valve_mapping_keys[-1]:
+                # Return maximum value
+                return self.valve_position_mapping[self._sorted_valve_mapping_keys[-1]]
+
+            # Find the appropriate valve position
+            for i, mapping_diff in enumerate(self._sorted_valve_mapping_keys):
+                if temp_difference <= mapping_diff:
+                    # Return the position from the previous threshold
+                    return self.valve_position_mapping[
+                        self._sorted_valve_mapping_keys[i - 1]
+                    ]
+
+            # Temp diff is higher than the highest threshold, fall back to max
+            return self._max_valve_position
+
+        # Get new valve position
+        new_valve_position = calculate_valve_position(
+            current_temp=self._current_temp, target_temp=self._target_temp
+        )
+        if new_valve_position == current_valve_position:
+            # No need to update the valve position if it is already the same
+            # TODO maybe add an option to force update it no matter the current state
+            return
+
+        # Set the new valve position
+        await self._set_valve_position(new_valve_position)
+
+    async def _set_valve_position(self, position: int) -> None:
+        """Set the valve position using number.set_value service."""
+        _LOGGER.debug("Setting valve position to %s", position)
+
+        domain = self.valve_entity_id.split(".", 1)[0]
+
+        await self.hass.services.async_call(
+            domain,
+            "set_value",
+            {"entity_id": self.valve_entity_id, "value": position},
+            blocking=True,
         )
