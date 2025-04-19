@@ -38,13 +38,11 @@ from homeassistant.helpers import condition
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import (
-    CONF_INITIAL_HVAC_MODE,
     CONF_MAX_TEMP,
     CONF_MIN_TEMP,
     CONF_POSITION_MAPPING,
     CONF_PRECISION,
     CONF_PRESETS,
-    CONF_TARGET_TEMP,
     CONF_TARGET_TEMP_STEP,
     CONF_TEMPERATURE_SENSOR_ENTITY_ID,
     CONF_VALVE_ENTITY_ID,
@@ -79,11 +77,7 @@ async def async_setup_entry(
     min_cycle_duration: timedelta | None = config_entry.options.get(
         CONF_MIN_CYCLE_DURATION
     )
-    target_temp: float | None = config_entry.options.get(CONF_TARGET_TEMP)
     target_temp_step: float | None = config_entry.options.get(CONF_TARGET_TEMP_STEP)
-    initial_hvac_mode: HVACMode | None = config_entry.options.get(
-        CONF_INITIAL_HVAC_MODE
-    )
     unit = hass.config.units.temperature_unit
     presets: dict[str, float] = {
         key: config_entry.options[value]
@@ -118,9 +112,7 @@ async def async_setup_entry(
                 max_temp=max_temp,
                 precision=precision,
                 min_cycle_duration=min_cycle_duration,
-                target_temp=target_temp,
                 target_temp_step=target_temp_step,
-                initial_hvac_mode=initial_hvac_mode,
                 unit=unit,
                 presets=presets,
             )
@@ -147,51 +139,56 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         max_temp: float | None,
         precision: float | None,
         min_cycle_duration: timedelta | None,
-        target_temp: float | None,
         target_temp_step: float | None,
         unit: UnitOfTemperature,
-        initial_hvac_mode: HVACMode | None,
         presets: dict[str, float],
     ) -> None:
         """Initialize the climate entity."""
         # super().__init__()
-        self._attr_device_info = async_device_info_to_link_from_entity(
-            hass,
-            valve_entity_id,
-        )
 
-        self._attr_name = name
-        self._attr_unique_id = unique_id
-        if min_temp is not None:
-            self._attr_min_temp = min_temp
-        if max_temp is not None:
-            self._attr_max_temp = max_temp
-        if precision is not None:
-            self._attr_precision = precision
-        self.min_cycle_duration = min_cycle_duration
-        self._target_temp = target_temp
-        self._saved_target_temp = target_temp or next(iter(presets.values()), None)
-        self._attr_target_temperature_step = (
-            target_temp_step if target_temp_step is not None else precision
-        )
-        self._attr_temperature_unit = unit
-        self._hvac_mode = initial_hvac_mode
-
-        self.valve_entity_id = valve_entity_id
-        self.temp_sensor_entity_id = temp_sensor_entity_id
-        self._current_temp: float | None = None
-
-        self.valve_position_mapping = valve_position_mapping
-        self._sorted_valve_mapping_keys = sorted(self.valve_position_mapping.keys())
-        self._min_valve_position = min(self.valve_position_mapping.values())
-        self._max_valve_position = max(self.valve_position_mapping.values())
-
+        # Entity Attributes
         self._attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
         if len(presets):
             self._attr_supported_features |= ClimateEntityFeature.PRESET_MODE
             self._attr_preset_modes = [PRESET_NONE, *presets.keys()]
         else:
             self._attr_preset_modes = [PRESET_NONE]
+
+        self._attr_device_info = async_device_info_to_link_from_entity(
+            hass,
+            valve_entity_id,
+        )
+        self._attr_name = name
+        self._attr_unique_id = unique_id
+
+        if min_temp is not None:
+            self._attr_min_temp = min_temp
+
+        if max_temp is not None:
+            self._attr_max_temp = max_temp
+
+        if precision is not None:
+            self._attr_precision = precision
+
+        self._attr_target_temperature_step = (
+            target_temp_step if target_temp_step is not None else precision
+        )
+        self._attr_temperature_unit = unit
+
+        # Other values
+        self._valve_entity_id: str = valve_entity_id
+        self._temp_sensor_entity_id: str = temp_sensor_entity_id
+        self._min_cycle_duration: timedelta = min_cycle_duration
+        self._target_temp = next(iter(presets.values()), None)
+        self._saved_target_temp = next(iter(presets.values()), None)
+        self._current_temp: float | None = None
+        self._hvac_mode: HVACMode | None = None
+
+        self._valve_position_mapping = valve_position_mapping
+        self._sorted_valve_mapping_keys = sorted(self._valve_position_mapping.keys())
+        self._min_valve_position = min(self._valve_position_mapping.values())
+        self._max_valve_position = max(self._valve_position_mapping.values())
+
         self._presets = presets
         self._presets_inv = {v: k for k, v in presets.items()}
 
@@ -202,19 +199,19 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         # Add listener
         self.async_on_remove(
             async_track_state_change_event(
-                self.hass, [self.temp_sensor_entity_id], self._async_sensor_changed
+                self.hass, [self._temp_sensor_entity_id], self._async_sensor_changed
             )
         )
         self.async_on_remove(
             async_track_state_change_event(
-                self.hass, [self.valve_entity_id], self._async_valve_changed
+                self.hass, [self._valve_entity_id], self._async_valve_changed
             )
         )
 
         @callback
         def _async_startup(_: Event | None = None) -> None:
             """Init on startup."""
-            sensor_state = self.hass.states.get(self.temp_sensor_entity_id)
+            sensor_state = self.hass.states.get(self._temp_sensor_entity_id)
             if sensor_state and sensor_state.state not in (
                 STATE_UNAVAILABLE,
                 STATE_UNKNOWN,
@@ -222,7 +219,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
                 self._async_update_temp(sensor_state)
                 self.async_write_ha_state()
 
-            valve_state = self.hass.states.get(self.valve_entity_id)
+            valve_state = self.hass.states.get(self._valve_entity_id)
             if valve_state and valve_state.state not in (
                 STATE_UNAVAILABLE,
                 STATE_UNKNOWN,
@@ -288,7 +285,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         if self._hvac_mode == HVACMode.OFF and self._is_device_active:
             _LOGGER.warning(
                 ("The hvac mode is OFF, but the valve is not closed. Closing valve %s"),
-                self.valve_entity_id,
+                self._valve_entity_id,
             )
             # TODO: Implement valve close
             # await self._async_heater_turn_off()
@@ -334,7 +331,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
     @property
     def _is_device_active(self) -> bool | None:
         """If the valve is currently active/open."""
-        if not (valve_state := self.hass.states.get(self.valve_entity_id)):
+        if not (valve_state := self.hass.states.get(self._valve_entity_id)):
             return None
 
         try:
@@ -344,7 +341,6 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             return None
 
     # Current temperature
-
     @property
     def current_temperature(self) -> float | None:
         """Return the current temperature."""
@@ -386,7 +382,6 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         self.async_write_ha_state()
 
     # Target temperature
-
     @property
     def target_temperature(self) -> float | None:
         """Return the temperature we try to reach."""
@@ -415,19 +410,19 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         #      (a position that doesn't let the room to cool to freezing temps but also
         #       makes no sauna club if temperature sensor is unavailable)
 
-        current_valve_state = self.hass.states.get(self.valve_entity_id)
+        current_valve_state = self.hass.states.get(self._valve_entity_id)
         # TODO check if unavailable/unknown state
         current_valve_position = current_valve_state.state
 
         # Check if we are in the min cycle duration, skip updating valve if so.
-        if not force and self.min_cycle_duration:
+        if not force and self._min_cycle_duration:
             try:
                 # TODO ignore unavailable/unkown states
                 long_enough = condition.state(
                     hass=self.hass,
-                    entity=self.valve_entity_id,
+                    entity=self._valve_entity_id,
                     req_state=current_valve_position,
-                    for_period=self.min_cycle_duration,
+                    for_period=self._min_cycle_duration,
                 )
 
             except ConditionError:
@@ -447,13 +442,13 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
 
             if temp_difference >= self._sorted_valve_mapping_keys[-1]:
                 # Return maximum value
-                return self.valve_position_mapping[self._sorted_valve_mapping_keys[-1]]
+                return self._valve_position_mapping[self._sorted_valve_mapping_keys[-1]]
 
             # Find the appropriate valve position
             for i, mapping_diff in enumerate(self._sorted_valve_mapping_keys):
                 if temp_difference <= mapping_diff:
                     # Return the position from the previous threshold
-                    return self.valve_position_mapping[
+                    return self._valve_position_mapping[
                         self._sorted_valve_mapping_keys[i - 1]
                     ]
 
@@ -476,11 +471,11 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         """Set the valve position using number.set_value service."""
         _LOGGER.debug("Setting valve position to %s", position)
 
-        domain = self.valve_entity_id.split(".", 1)[0]
+        domain = self._valve_entity_id.split(".", 1)[0]
 
         await self.hass.services.async_call(
             domain,
             "set_value",
-            {"entity_id": self.valve_entity_id, "value": position},
+            {"entity_id": self._valve_entity_id, "value": position},
             blocking=True,
         )

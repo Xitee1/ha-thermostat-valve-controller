@@ -39,9 +39,3 @@ CONF_PRESETS = {
         PRESET_ACTIVITY,
     )
 }
-
-# TODO check if and why target temp is needed
-CONF_TARGET_TEMP = "target_temp"
-
-# TODO check if and why hvac mode is needed
-CONF_INITIAL_HVAC_MODE = "initial_hvac_mode"
