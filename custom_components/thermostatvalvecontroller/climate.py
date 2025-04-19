@@ -416,8 +416,6 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         # TODO If we do not update the valve because the cycle was not long enough,
         #      it will stay in the same state until the next state update, which can be a long time
 
-        # TODO need to check hvac mode?
-
         # TODO add emergency valve position
         #      (a position that doesn't let the room to cool to freezing temps but also
         #       makes no sauna club if temperature sensor is unavailable)
@@ -442,6 +440,16 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
 
             if not long_enough:
                 return
+
+        if self._hvac_mode == HVACMode.OFF:
+            # Close valve if the hvac mode is off.
+            # To allow manual changes to the valve position while the thermostat is turned off
+            #   (and not keep resetting it on temp changes), we only close it when force is True, which is the case when changing the hvac mode
+            if force:
+                await self._set_valve_position(self._min_valve_position)
+
+            # ...and do not perform further actions
+            return
 
         def calculate_valve_position(current_temp, target_temp) -> int:
             """Calculate the valve position based on the current and target temperature."""
