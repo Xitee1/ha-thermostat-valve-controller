@@ -103,8 +103,11 @@ CONFIG_FLOW: dict[str, SchemaFlowFormStep | SchemaFlowMenuStep] = {
 }
 
 OPTIONS_FLOW: dict[str, SchemaFlowFormStep | SchemaFlowMenuStep] = {
-    "init": SchemaFlowFormStep(VALVE_SCHEMA, next_step="thermostat"),
-    "thermostat": SchemaFlowFormStep(THERMOSTAT_SCHEMA, next_step="presets"),
+    "init": SchemaFlowMenuStep(
+        options=["valve", "thermostat", "presets"]
+    ),
+    "valve": SchemaFlowFormStep(VALVE_SCHEMA),
+    "thermostat": SchemaFlowFormStep(THERMOSTAT_SCHEMA),
     "presets": SchemaFlowFormStep(PRESETS_SCHEMA),
 }
 

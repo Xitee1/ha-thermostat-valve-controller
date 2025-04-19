@@ -48,6 +48,13 @@
     "options": {
         "step": {
             "init": {
+                "menu_options": {
+                  "valve": "Valve Configuration",
+                  "thermostat": "Temperature Settings",
+                  "presets": "Preset Temperatures"
+                }
+            },
+            "valve": {
                 "data": {
                     "temperature_sensor_entity_id": "Temperature sensor entity",
                     "precision": "Precision of the temperature sensor",
