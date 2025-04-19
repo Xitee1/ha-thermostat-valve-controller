@@ -34,8 +34,7 @@ from .const import (
     CONF_TARGET_TEMP_STEP,
     CONF_TEMPERATURE_SENSOR_ENTITY_ID,
     CONF_VALVE_ENTITY_ID,
-    CONF_VALVE_MAX_POSITION,
-    CONF_VALVE_MIN_POSITION,
+    CONF_VALVE_EMERGENCY_POSITION,
     CONF_MIN_CYCLE_DURATION,
     DOMAIN,
 )
@@ -53,13 +52,13 @@ VALVE_SCHEMA = vol.Schema(
             )
         ),
         vol.Required(CONF_VALVE_ENTITY_ID): selector.EntitySelector(
-            selector.EntitySelectorConfig(domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN])
+            selector.EntitySelectorConfig(
+                domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN])
         ),
         vol.Optional(CONF_MIN_CYCLE_DURATION): selector.DurationSelector(
             selector.DurationSelectorConfig(allow_negative=False)
         ),
-        vol.Required(CONF_VALVE_MIN_POSITION, default=0): int,
-        vol.Required(CONF_VALVE_MAX_POSITION, default=100): int,
+        vol.Optional(CONF_VALVE_EMERGENCY_POSITION, default=25): vol.Coerce(float),
     }
 )
 

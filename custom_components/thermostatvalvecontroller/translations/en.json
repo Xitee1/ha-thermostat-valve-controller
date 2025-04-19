@@ -7,16 +7,14 @@
                     "temperature_sensor_entity_id": "Temperature sensor entity",
                     "precision": "Temperature sensor precision",
                     "valve_entity_id": "Thermostat valve entity",
-                    "valve_min_position": "Minimum valve position",
-                    "valve_max_position": "Maximum valve position",
+                    "valve_emergency_position": "Emergency valve position",
                     "min_cycle_duration": "Minimum cycle duration"
                 },
                 "data_description": {
                     "temperature_sensor_entity_id": "Entity ID of the temperature sensor",
                     "precision": "Precision of the temperature sensor. Usually this is 0.1 or 1. Some sensors might have a higher accuracity and use 0.01",
                     "valve_entity_id": "Entity ID of the valve position input",
-                    "valve_min_position": "Minimum position of the valve",
-                    "valve_max_position": "Maximum position of the valve. Usually the valve range is 0-100. Some thermostats like Eurotronic use 0-255",
+                    "valve_emergency_position": "The emergency valve position is used when the temperature sensor is not available. Set this to a value that does not make the arctis or a sauna club out of your room. Leave empty to stop controlling the valve altogether if the temperature sensor unavailable (NOT RECOMMENDED if you don't externally handle this problem because of said reasons).",
                     "min_cycle_duration": "Minimum cycle duration in seconds. Useful to prevent the valve from moving too often, reducing battery life."
                 }
             },
@@ -70,16 +68,14 @@
                     "temperature_sensor_entity_id": "Temperature sensor entity",
                     "precision": "Precision of the temperature sensor",
                     "valve_entity_id": "Thermostat valve entity",
-                    "valve_min_position": "Minimum valve position",
-                    "valve_max_position": "Maximum valve position",
+                    "valve_emergency_position": "Emergency valve position",
                     "min_cycle_duration": "Minimum cycle duration"
                 },
                 "data_description": {
                     "temperature_sensor_entity_id": "Entity ID of the temperature sensor",
                     "precision": "Precision of the temperature sensor. Usually this is 0.1 or 1. Some sensors might have a higher accuracity and use 0.01",
                     "valve_entity_id": "Entity ID of the valve position input",
-                    "valve_min_position": "Minimum position of the valve",
-                    "valve_max_position": "Maximum position of the valve. Usually the valve range is 0-100. Some thermostats like Eurotronic use 0-255",
+                    "valve_emergency_position": "The emergency valve position is used when the temperature sensor is not available. Set this to a value that does not make the arctis or a sauna club out of your room. Leave empty to stop controlling the valve altogether if the temperature sensor unavailable (NOT RECOMMENDED if you don't externally handle this problem because of said reasons).",
                     "min_cycle_duration": "Minimum cycle duration in seconds. Useful to prevent the valve from moving too often, reducing battery life."
                 }
             },
