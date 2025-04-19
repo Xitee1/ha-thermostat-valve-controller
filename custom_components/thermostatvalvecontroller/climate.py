@@ -227,7 +227,6 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
                 STATE_UNKNOWN,
             ):
                 self._async_update_temp(sensor_state)
-                self.async_write_ha_state()
 
             valve_state = self.hass.states.get(self._valve_entity_id)
             if valve_state and valve_state.state not in (
@@ -266,8 +265,10 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             self._target_temp = self.min_temp
 
         # Set default hvac mode to off if still None
-        if self._hvac_mode is None:
+        if self._hvac_mode not in self.hvac_modes:
             self._hvac_mode = HVACMode.OFF
+
+        self.async_write_ha_state()
 
     async def _async_sensor_changed(self, event: Event[EventStateChangedData]) -> None:
         """Handle temperature changes."""
@@ -302,12 +303,10 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             # TODO: Implement valve close
             # await self._async_heater_turn_off()
 
-    # @property
-    # def available(self) -> bool:
-    #     """Return climate group availability."""
-    #     return (self._current_temperature is not None) and (
-    #         self._current_valve_position is not None
-    #     )
+    @property
+    def available(self) -> bool:
+        """Return climate group availability."""
+        return self.hass.states.get(self._valve_entity_id)
 
     # HVAC Mode
     @property
