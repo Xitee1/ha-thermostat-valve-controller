@@ -310,7 +310,6 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
     #     )
 
     # HVAC Mode
-
     @property
     def hvac_mode(self) -> HVACMode | None:
         """Return the current hvac mode."""
@@ -318,16 +317,16 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
 
     async def async_set_hvac_mode(self, hvac_mode):
         """Set new target hvac mode."""
-        if hvac_mode == HVACMode.HEAT:
-            self._attr_hvac_action = HVACAction.HEATING
-        elif hvac_mode == HVACMode.OFF:
-            self._attr_hvac_action = HVACAction.OFF
-        else:
-            raise ValueError(f"Unsupported hvac mode: {hvac_mode}")
+        if hvac_mode not in self.hvac_modes:
+            raise ValueError(
+                f"Got unsupported hvac_mode {hvac_mode}. Must be one of {self.hvac_modes}"
+            )
+
+        self._hvac_mode = hvac_mode
+        await self._async_control_heating(force=True)
 
         # Update the state of the entity
-        await self.async_update_ha_state()
-        # await self.async_write_ha_state()
+        self.async_write_ha_state()
 
     @property
     def hvac_action(self) -> HVACAction:
