@@ -20,10 +20,15 @@ from homeassistant.helpers.schema_config_entry_flow import (
 from homeassistant.const import CONF_NAME, DEGREE
 from homeassistant.components.climate.const import DEFAULT_MIN_TEMP, DEFAULT_MAX_TEMP
 
+from homeassistant.helpers.selector import (
+    ObjectSelector,
+    ObjectSelectorConfig,
+)
 
 from .const import (
     CONF_MAX_TEMP,
     CONF_MIN_TEMP,
+    CONF_POSITION_MAPPING,
     CONF_PRECISION,
     CONF_PRESETS,
     CONF_TARGET_TEMP_STEP,
@@ -56,6 +61,26 @@ VALVE_SCHEMA = vol.Schema(
         ),
         vol.Required(CONF_VALVE_MIN_POSITION, default=0): int,
         vol.Required(CONF_VALVE_MAX_POSITION, default=100): int,
+    }
+)
+
+VALVE_POSITION_SCHEMA = vol.Schema(
+    {
+        vol.Optional(CONF_POSITION_MAPPING, default={
+            "-0.2": 0,
+            "-0.1": 15,
+            "0.0": 25,
+            "0.1": 35,
+            "0.2": 50,
+            "0.4": 80,
+            "0.7": 90,
+            "1.0": 100,
+            "1.3": 120,
+            "1.7": 150,
+            "2.0": 180,
+        }): ObjectSelector(
+            ObjectSelectorConfig()
+        ),
     }
 )
 
@@ -97,16 +122,18 @@ CONFIG_SCHEMA = vol.Schema(
 ).extend(VALVE_SCHEMA.schema)
 
 CONFIG_FLOW: dict[str, SchemaFlowFormStep | SchemaFlowMenuStep] = {
-    "user": SchemaFlowFormStep(CONFIG_SCHEMA, next_step="thermostat"),
+    "user": SchemaFlowFormStep(CONFIG_SCHEMA, next_step="valve_position"),
+    "valve_position": SchemaFlowFormStep(VALVE_POSITION_SCHEMA, next_step="thermostat"),
     "thermostat": SchemaFlowFormStep(THERMOSTAT_SCHEMA, next_step="presets"),
     "presets": SchemaFlowFormStep(PRESETS_SCHEMA),
 }
 
 OPTIONS_FLOW: dict[str, SchemaFlowFormStep | SchemaFlowMenuStep] = {
     "init": SchemaFlowMenuStep(
-        options=["valve", "thermostat", "presets"]
+        options=["valve", "valve_position", "thermostat", "presets"]
     ),
     "valve": SchemaFlowFormStep(VALVE_SCHEMA),
+    "valve_position": SchemaFlowFormStep(VALVE_POSITION_SCHEMA),
     "thermostat": SchemaFlowFormStep(THERMOSTAT_SCHEMA),
     "presets": SchemaFlowFormStep(PRESETS_SCHEMA),
 }

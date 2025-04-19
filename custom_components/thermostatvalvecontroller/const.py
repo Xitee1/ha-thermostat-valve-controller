@@ -20,7 +20,7 @@ CONF_VALVE_MAX_POSITION = "valve_max_position"
 CONF_VALVE_MIN_POSITION = "valve_min_position"
 
 # Valve Positions
-# TODO...
+CONF_POSITION_MAPPING = "position_mapping"
 
 # Thermostat
 CONF_MIN_TEMP = "min_temp"

@@ -20,6 +20,16 @@
                     "min_cycle_duration": "Minimum cycle duration in seconds. Useful to prevent the valve from moving too often, reducing battery life."
                 }
             },
+            "valve_position": {
+                "title": "Valve Position Mapping",
+                "description": "Define custom position mappings for the valve. Enter as JSON key-value pairs where keys are temperatures and values are valve positions.",
+                "data": {
+                    "position_mapping": "Position Mapping"
+                },
+                "data_description": {
+                    "position_mapping": "It's recommended to leave this as default for now. You can fine tune it later on."
+                }
+            },
             "presets": {
                 "title": "Temperature presets",
                 "data": {
@@ -49,9 +59,10 @@
         "step": {
             "init": {
                 "menu_options": {
-                  "valve": "Valve Configuration",
-                  "thermostat": "Temperature Settings",
-                  "presets": "Preset Temperatures"
+                    "valve": "Valve Configuration",
+                    "valve_position": "Valve Position Mapping",
+                    "thermostat": "Temperature Settings",
+                    "presets": "Preset Temperatures"
                 }
             },
             "valve": {
@@ -70,6 +81,13 @@
                     "valve_min_position": "Minimum position of the valve",
                     "valve_max_position": "Maximum position of the valve. Usually the valve range is 0-100. Some thermostats like Eurotronic use 0-255",
                     "min_cycle_duration": "Minimum cycle duration in seconds. Useful to prevent the valve from moving too often, reducing battery life."
+                }
+            },
+            "valve_position": {
+                "title": "Valve Position Mapping",
+                "description": "Define custom position mappings for the valve. Enter as JSON key-value pairs where keys are temperatures and values are valve positions.",
+                "data": {
+                    "position_mapping": "Position Mapping"
                 }
             },
             "presets": {
