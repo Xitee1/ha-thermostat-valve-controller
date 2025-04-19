@@ -53,8 +53,7 @@ VALVE_SCHEMA = vol.Schema(
             )
         ),
         vol.Required(CONF_VALVE_ENTITY_ID): selector.EntitySelector(
-            selector.EntitySelectorConfig(
-                domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN])
+            selector.EntitySelectorConfig(domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN])
         ),
         vol.Optional(CONF_MIN_CYCLE_DURATION): selector.DurationSelector(
             selector.DurationSelectorConfig(allow_negative=False)
@@ -66,21 +65,22 @@ VALVE_SCHEMA = vol.Schema(
 
 VALVE_POSITION_SCHEMA = vol.Schema(
     {
-        vol.Optional(CONF_POSITION_MAPPING, default={
-            "-0.2": 0,
-            "-0.1": 15,
-            "0.0": 25,
-            "0.1": 35,
-            "0.2": 50,
-            "0.4": 80,
-            "0.7": 90,
-            "1.0": 100,
-            "1.3": 120,
-            "1.7": 150,
-            "2.0": 180,
-        }): ObjectSelector(
-            ObjectSelectorConfig()
-        ),
+        vol.Optional(
+            CONF_POSITION_MAPPING,
+            default={
+                "-0.2": 0,
+                "-0.1": 15,
+                "0.0": 25,
+                "0.1": 35,
+                "0.2": 50,
+                "0.4": 80,
+                "0.7": 90,
+                "1.0": 100,
+                "1.3": 120,
+                "1.7": 150,
+                "2.0": 180,
+            },
+        ): ObjectSelector(ObjectSelectorConfig()),
     }
 )
 
@@ -88,17 +88,23 @@ THERMOSTAT_SCHEMA = vol.Schema(
     {
         vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): selector.NumberSelector(
             selector.NumberSelectorConfig(
-                mode=selector.NumberSelectorMode.BOX, unit_of_measurement=DEGREE, step=0.1
+                mode=selector.NumberSelectorMode.BOX,
+                unit_of_measurement=DEGREE,
+                step=0.1,
             )
         ),
         vol.Optional(CONF_MAX_TEMP, default=DEFAULT_MAX_TEMP): selector.NumberSelector(
             selector.NumberSelectorConfig(
-                mode=selector.NumberSelectorMode.BOX, unit_of_measurement=DEGREE, step=0.1
+                mode=selector.NumberSelectorMode.BOX,
+                unit_of_measurement=DEGREE,
+                step=0.1,
             )
         ),
         vol.Optional(CONF_TARGET_TEMP_STEP, default=0.1): selector.NumberSelector(
             selector.NumberSelectorConfig(
-                mode=selector.NumberSelectorMode.BOX, unit_of_measurement=DEGREE, step=0.01
+                mode=selector.NumberSelectorMode.BOX,
+                unit_of_measurement=DEGREE,
+                step=0.01,
             )
         ),
     }
@@ -108,7 +114,9 @@ PRESETS_SCHEMA = vol.Schema(
     {
         vol.Optional(v): selector.NumberSelector(
             selector.NumberSelectorConfig(
-                mode=selector.NumberSelectorMode.BOX, unit_of_measurement=DEGREE, step=0.1
+                mode=selector.NumberSelectorMode.BOX,
+                unit_of_measurement=DEGREE,
+                step=0.1,
             )
         )
         for v in CONF_PRESETS.values()
