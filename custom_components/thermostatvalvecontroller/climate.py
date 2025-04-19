@@ -411,8 +411,6 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
     # Valve control
     async def _async_control_heating(self, force: bool = False) -> None:
         """Control the valve position."""
-        # TODO: Implement the logic to control the valve position
-
         # TODO If we do not update the valve because the cycle was not long enough,
         #      it will stay in the same state until the next state update, which can be a long time
 
