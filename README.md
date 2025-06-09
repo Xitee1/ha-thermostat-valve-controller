@@ -27,6 +27,7 @@ Goal for this is:
 - Need to check if device mapping does work (so that the thermostat entity of this integration gets linked to the existing valve device (if the valve integration provides a device))
 - Add support for multiple valves per thermostat
 - Trigger valve position update after min cycle duration (if was skipped before beacuse of the delay)
+- When testing using input_numbers, the current temp will not load until it updates. Need more investigation for this in real world usage. According to the code it should update if it is available and on any state changes that are valid (not unavailable, ...) but that does not seem to happen in my testings
 
 ### Features (list incomplete)
 
