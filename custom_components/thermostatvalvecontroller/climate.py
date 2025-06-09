@@ -408,10 +408,6 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         # TODO If we do not update the valve because the cycle was not long enough,
         #      it will stay in the same state until the next state update, which can be a long time
 
-        # TODO add emergency valve position
-        #      (a position that doesn't let the room to cool to freezing temps but also
-        #       makes no sauna club if temperature sensor is unavailable)
-
         current_valve_state = self.hass.states.get(self._valve_entity_id)
 
         try:
