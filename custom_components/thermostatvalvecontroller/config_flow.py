@@ -99,7 +99,7 @@ THERMOSTAT_SCHEMA = vol.Schema(
                 step=0.1,
             )
         ),
-        vol.Optional(CONF_TARGET_TEMP_STEP, default=0.1): selector.NumberSelector(
+        vol.Optional(CONF_TARGET_TEMP_STEP, default=0.5): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 mode=selector.NumberSelectorMode.BOX,
                 unit_of_measurement=DEGREE,
