@@ -259,6 +259,8 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
                 self._attr_preset_mode = preset_mode
                 if preset_mode != PRESET_NONE and preset_mode in self._presets:
                     self._target_temp = self._presets[preset_mode]
+            else:
+                self._attr_preset_mode = None
 
         # Set default target temperature if still None
         if self._target_temp is None:
