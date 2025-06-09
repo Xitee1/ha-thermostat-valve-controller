@@ -46,7 +46,7 @@ VALVE_SCHEMA = vol.Schema(
                 domain=[SENSOR_DOMAIN, NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN]
             )
         ),
-        vol.Optional(CONF_PRECISION, default=0.5): selector.NumberSelector(
+        vol.Optional(CONF_PRECISION, default=0.1): selector.NumberSelector(
             selector.NumberSelectorConfig(
                 mode=selector.NumberSelectorMode.BOX, step=0.01
             )
