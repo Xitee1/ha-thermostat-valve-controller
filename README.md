@@ -1,12 +1,12 @@
 # Home Assistant Thermostat Valve Controller (WIP)
 
-Ever had the problem that your thermostat did not heating the way you wanted it to?
-It either did not open the valve enough or too much or had a high delay?
-A PID controller or other tools like `Better Thermostat` also didn't work?
-Having a thermostat like the `Eurotronic Comet` that allows you to manually control its valve?
-Then this integration is for you!
-Based on a temperature difference between current and target, you can define your own valve positions easily.
-It's like the `generic thermostat` but for valves, not on/off heaters and has many additional [features](#features-list-incomplete).
+Ever had the problem that your thermostat did not heat the way you wanted it to?<br>
+It either did not open the valve enough or too much or had a high delay?<br>
+A PID controller or other tools like `Better Thermostat` also didn't work?<br>
+Having a thermostat like the `Eurotronic Comet` that allows you to manually control its valve?<br>
+Then this integration is for you!<br>
+Based on a temperature difference between current and target, you can define your own valve positions easily.<br>
+It's like the `generic thermostat` but for valves, not on/off heaters, and has many additional [features](#features-list-incomplete).
 
 ## Project start
 
