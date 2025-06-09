@@ -8,6 +8,16 @@ Then this integration is for you!<br>
 Based on a temperature difference between current and target, you can define your own valve positions easily.<br>
 It's like the `generic thermostat` but for valves, not on/off heaters, and has many additional [features](#features-list-incomplete).
 
+
+## Installation
+### HACS
+1. Open the custom repository dialog in HACS ([Instructions](https://www.hacs.xyz/docs/faq/custom_repositories/))
+2. Enter this repository URL into the `Repository` field and select `Integration` as type.<br>`https://github.com/Xitee1/ha-thermostat-valve-controller`
+3. Search for `Thermostat Valve Controller` in HACS and install the integration
+4. Restart Home Assistant
+5. Navigate to [Helpers in HA or click this link](https://my.home-assistant.io/redirect/helpers/)
+6. Create a new helper and select `Thermostat Valve Controller`
+
 ## Project start
 
 Based on: https://github.com/Xitee1/home-assistant-custom-components-devcontainers-template
