@@ -294,14 +294,8 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         self.async_write_ha_state()
 
     async def _check_valve_initial_state(self) -> None:
-        """Prevent the device from keep running if HVACMode.OFF."""
-        if self._hvac_mode == HVACMode.OFF and self._is_device_active:
-            _LOGGER.warning(
-                ("The hvac mode is OFF, but the valve is not closed. Closing valve %s"),
-                self._valve_entity_id,
-            )
-            # TODO: Implement valve close
-            # await self._async_heater_turn_off()
+        """Sets the valve to the correct position on startup."""
+        await self._async_control_heating(force=True)
 
     @property
     def available(self) -> bool:
