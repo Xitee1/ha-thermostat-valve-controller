@@ -364,8 +364,9 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             if not math.isfinite(current_temp):
                 raise ValueError(f"Sensor has illegal state {state.state}")
             self._current_temp = current_temp
-        except ValueError as ex:
-            _LOGGER.error("Unable to update from sensor: %s", ex)
+        except ValueError as e:
+            self._current_temp = None
+            _LOGGER.error("Unable to update from sensor: %s", e)
 
     # Presets
     async def async_set_preset_mode(self, preset_mode: str) -> None:
@@ -418,8 +419,13 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         #       makes no sauna club if temperature sensor is unavailable)
 
         current_valve_state = self.hass.states.get(self._valve_entity_id)
-        # TODO check if unavailable/unknown state
-        current_valve_position = current_valve_state.state
+
+        try:
+            current_valve_position = float(current_valve_state.state)
+        except (ValueError, TypeError):
+            _LOGGER.error("Failed to parse valve position: %s",
+                          current_valve_state.state)
+            return
 
         # Check if we are in the min cycle duration, skip updating valve if so.
         if not force and self._min_cycle_duration:
@@ -448,8 +454,13 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             # ...and do not perform further actions
             return
 
-        def calculate_valve_position(current_temp, target_temp) -> int:
+        def calculate_valve_position(current_temp: float | None, target_temp: float | None) -> int:
             """Calculate the valve position based on the current and target temperature."""
+            if not current_temp or not target_temp:
+                _LOGGER.warning(
+                    "Current or target temperature is None, setting valve to emergency position")
+                return self._valve_emergency_position
+
             temp_difference = round(target_temp - current_temp, 1)
 
             # Handle cases outside the defined range
