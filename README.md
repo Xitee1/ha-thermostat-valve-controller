@@ -14,7 +14,7 @@ Based on: https://github.com/Xitee1/home-assistant-custom-components-devcontaine
 
 Based on my AppDaemon script: https://github.com/Xitee1/AD-ThermostatController
 
-Because I now have more thermostat and the appdaemon version requires you to misuse the generic_thermostat integration which just doesn't work good when used like this and all the manual work that is needed, I'm creating an integration for this.
+Because I now have more thermostats and the appdaemon version requires you to misuse the generic_thermostat integration which just doesn't work good when used like this and all the manual work that is needed, I'm creating an integration for this.
 
 Goal for this is:
 
