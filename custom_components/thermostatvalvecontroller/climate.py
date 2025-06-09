@@ -480,6 +480,9 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         if new_valve_position == current_valve_position:
             # No need to update the valve position if it is already the same
             # TODO maybe add an option to force update it no matter the current state
+            #       (in case the thermostat did not report a state update and the actual value is different).
+            #       Need to check if that would even work or if HA would ignore it if we set the same state again
+            #       (maybe this check here isn't even neccessary in this case).
             return
 
         # Set the new valve position
