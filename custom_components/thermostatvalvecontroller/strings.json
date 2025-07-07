@@ -2,21 +2,118 @@
   "config": {
     "step": {
       "user": {
-        "description": "New NEW_NAME Sensor",
+        "title": "Thermostat Valve Controller",
+        "description": "Set up the Thermostat Valve Controller integration",
         "data": {
-          "entity_id": "Input sensor",
-          "name": "Name"
+          "name": "Integration Name"
+        }
+      },
+      "manage_thermostats": {
+        "title": "Manage Thermostats",
+        "description": "Add, edit, or delete thermostats. At least one thermostat is required.",
+        "data": {
+          "action": "Action",
+          "thermostat_index": "Select Thermostat"
+        }
+      },
+      "thermostat_config": {
+        "title": "Thermostat Configuration",
+        "description": "Configure basic thermostat settings",
+        "data": {
+          "thermostat_name": "Thermostat Name",
+          "temperature_sensor_entity_id": "Temperature Sensor",
+          "precision": "Temperature Precision",
+          "valve_entity_id": "Valve Entity",
+          "min_cycle_duration": "Minimum Cycle Duration",
+          "valve_emergency_position": "Emergency Valve Position"
+        }
+      },
+      "valve_position": {
+        "title": "Valve Position Mapping",
+        "description": "Configure how temperature differences map to valve positions",
+        "data": {
+          "position_mapping": "Position Mapping"
+        }
+      },
+      "thermostat_settings": {
+        "title": "Thermostat Settings",
+        "description": "Configure temperature limits and step size",
+        "data": {
+          "min_temp": "Minimum Temperature",
+          "max_temp": "Maximum Temperature",
+          "target_temp_step": "Temperature Step Size"
+        }
+      },
+      "presets": {
+        "title": "Temperature Presets",
+        "description": "Configure temperature presets for different modes",
+        "data": {
+          "away_temp": "Away Temperature",
+          "comfort_temp": "Comfort Temperature",
+          "eco_temp": "Eco Temperature",
+          "home_temp": "Home Temperature",
+          "sleep_temp": "Sleep Temperature",
+          "activity_temp": "Activity Temperature"
         }
       }
+    },
+    "error": {
+      "no_thermostats": "At least one thermostat must be configured"
     }
   },
   "options": {
     "step": {
-      "init": {
+      "manage_thermostats": {
+        "title": "Manage Thermostats",
+        "description": "Add, edit, or delete thermostats. At least one thermostat is required.",
         "data": {
-          "entity_id": "[%key:component::NEW_DOMAIN::config::step::user::description%]"
+          "action": "Action",
+          "thermostat_index": "Select Thermostat"
+        }
+      },
+      "thermostat_config": {
+        "title": "Thermostat Configuration",
+        "description": "Configure basic thermostat settings",
+        "data": {
+          "thermostat_name": "Thermostat Name",
+          "temperature_sensor_entity_id": "Temperature Sensor",
+          "precision": "Temperature Precision",
+          "valve_entity_id": "Valve Entity",
+          "min_cycle_duration": "Minimum Cycle Duration",
+          "valve_emergency_position": "Emergency Valve Position"
+        }
+      },
+      "valve_position": {
+        "title": "Valve Position Mapping",
+        "description": "Configure how temperature differences map to valve positions",
+        "data": {
+          "position_mapping": "Position Mapping"
+        }
+      },
+      "thermostat_settings": {
+        "title": "Thermostat Settings",
+        "description": "Configure temperature limits and step size",
+        "data": {
+          "min_temp": "Minimum Temperature",
+          "max_temp": "Maximum Temperature",
+          "target_temp_step": "Temperature Step Size"
+        }
+      },
+      "presets": {
+        "title": "Temperature Presets",
+        "description": "Configure temperature presets for different modes",
+        "data": {
+          "away_temp": "Away Temperature",
+          "comfort_temp": "Comfort Temperature",
+          "eco_temp": "Eco Temperature",
+          "home_temp": "Home Temperature",
+          "sleep_temp": "Sleep Temperature",
+          "activity_temp": "Activity Temperature"
         }
       }
+    },
+    "error": {
+      "no_thermostats": "At least one thermostat must be configured"
     }
   }
 }

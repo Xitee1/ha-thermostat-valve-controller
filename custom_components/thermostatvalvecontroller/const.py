@@ -11,6 +11,10 @@ from homeassistant.components.climate import (
 
 DOMAIN = "thermostatvalvecontroller"
 
+# Multiple thermostats support
+CONF_THERMOSTATS = "thermostats"
+CONF_THERMOSTAT_NAME = "thermostat_name"
+
 # Valve
 CONF_TEMPERATURE_SENSOR_ENTITY_ID = "temperature_sensor_entity_id"
 CONF_PRECISION = "precision"

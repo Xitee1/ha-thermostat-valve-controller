@@ -3,6 +3,7 @@
 import logging
 import math
 from datetime import timedelta
+from typing import Any
 
 from homeassistant.components.climate import (
     ClimateEntity,
@@ -45,6 +46,8 @@ from .const import (
     CONF_PRESETS,
     CONF_TARGET_TEMP_STEP,
     CONF_TEMPERATURE_SENSOR_ENTITY_ID,
+    CONF_THERMOSTATS,
+    CONF_THERMOSTAT_NAME,
     CONF_VALVE_ENTITY_ID,
     CONF_MIN_CYCLE_DURATION,
     CONF_VALVE_EMERGENCY_POSITION,
@@ -58,71 +61,196 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Initialize test config entry."""
+    """Initialize config entry."""
     registry = er.async_get(hass)
+    entities = []
+    
+    # Check if this is the new multiple thermostats format
+    thermostats_config = config_entry.data.get(CONF_THERMOSTATS)
+    if thermostats_config:
+        # New format with multiple thermostats
+        for i, thermostat_config in enumerate(thermostats_config):
+            entity = await _create_thermostat_entity(
+                hass=hass,
+                registry=registry,
+                config_entry=config_entry,
+                thermostat_config=thermostat_config,
+                thermostat_index=i,
+            )
+            if entity:
+                entities.append(entity)
+    else:
+        # Legacy format - single thermostat from options
+        legacy_entity = await _create_legacy_thermostat_entity(
+            hass=hass,
+            registry=registry,
+            config_entry=config_entry,
+        )
+        if legacy_entity:
+            entities.append(legacy_entity)
 
-    name: str = config_entry.title
-    unique_id: str = config_entry.entry_id
-    valve_entity_id: str = er.async_validate_entity_id(
-        registry, config_entry.options[CONF_VALVE_ENTITY_ID]
-    )
-    valve_position_mapping: dict[str, int] = config_entry.options.get(
-        CONF_POSITION_MAPPING, {}
-    )
-    temp_sensor_entity_id: str = er.async_validate_entity_id(
-        registry, config_entry.options[CONF_TEMPERATURE_SENSOR_ENTITY_ID]
-    )
-    min_temp: float | None = config_entry.options.get(CONF_MIN_TEMP)
-    max_temp: float | None = config_entry.options.get(CONF_MAX_TEMP)
-    precision: float | None = config_entry.options.get(CONF_PRECISION)
-    min_cycle_duration: timedelta | None = config_entry.options.get(
-        CONF_MIN_CYCLE_DURATION
-    )
-    valve_emergency_position: float | None = config_entry.options.get(
-        CONF_VALVE_EMERGENCY_POSITION
-    )
-    target_temp_step: float | None = config_entry.options.get(
-        CONF_TARGET_TEMP_STEP)
+    if entities:
+        async_add_entities(entities)
+
+
+async def _create_thermostat_entity(
+    hass: HomeAssistant,
+    registry: er.EntityRegistry,
+    config_entry: ConfigEntry,
+    thermostat_config: dict[str, Any],
+    thermostat_index: int,
+) -> "ValveControllerClimate | None":
+    """Create a thermostat entity from configuration."""
+    
+    # Extract configuration
+    thermostat_name = thermostat_config.get(CONF_THERMOSTAT_NAME, f"Thermostat {thermostat_index + 1}")
+    
+    try:
+        valve_entity_id = er.async_validate_entity_id(
+            registry, thermostat_config[CONF_VALVE_ENTITY_ID]
+        )
+        temp_sensor_entity_id = er.async_validate_entity_id(
+            registry, thermostat_config[CONF_TEMPERATURE_SENSOR_ENTITY_ID]
+        )
+    except (KeyError, ValueError) as err:
+        _LOGGER.error(
+            "Invalid entity configuration for thermostat %s: %s",
+            thermostat_name, err
+        )
+        return None
+
+    valve_position_mapping = thermostat_config.get(CONF_POSITION_MAPPING, {})
+    
+    # Validate valve position mapping
+    if not valve_position_mapping:
+        _LOGGER.error(
+            "Valve position mapping is empty for thermostat %s! Please add your valve mappings.",
+            thermostat_name
+        )
+        return None
+
+    # Convert mapping keys to float and values to int
+    try:
+        valve_position_mapping = {
+            float(k): float(v) for k, v in valve_position_mapping.items()
+        }
+    except (ValueError, TypeError) as err:
+        _LOGGER.error(
+            "Invalid valve position mapping for thermostat %s: %s",
+            thermostat_name, err
+        )
+        return None
+
+    # Extract other configuration
+    min_temp = thermostat_config.get(CONF_MIN_TEMP)
+    max_temp = thermostat_config.get(CONF_MAX_TEMP)
+    precision = thermostat_config.get(CONF_PRECISION)
+    min_cycle_duration = thermostat_config.get(CONF_MIN_CYCLE_DURATION)
+    valve_emergency_position = thermostat_config.get(CONF_VALVE_EMERGENCY_POSITION)
+    target_temp_step = thermostat_config.get(CONF_TARGET_TEMP_STEP)
     unit = hass.config.units.temperature_unit
+    
+    # Extract presets
+    presets: dict[str, float] = {
+        key: thermostat_config[value]
+        for key, value in CONF_PRESETS.items()
+        if value in thermostat_config
+    }
+
+    # Create unique ID for this thermostat
+    unique_id = f"{config_entry.entry_id}_{thermostat_index}"
+
+    return ValveControllerClimate(
+        hass=hass,
+        name=thermostat_name,
+        unique_id=unique_id,
+        valve_entity_id=valve_entity_id,
+        valve_position_mapping=valve_position_mapping,
+        temp_sensor_entity_id=temp_sensor_entity_id,
+        min_temp=min_temp,
+        max_temp=max_temp,
+        precision=precision,
+        min_cycle_duration=min_cycle_duration,
+        valve_emergency_position=valve_emergency_position,
+        target_temp_step=target_temp_step,
+        unit=unit,
+        presets=presets,
+    )
+
+
+async def _create_legacy_thermostat_entity(
+    hass: HomeAssistant,
+    registry: er.EntityRegistry,
+    config_entry: ConfigEntry,
+) -> "ValveControllerClimate | None":
+    """Create a thermostat entity from legacy single-thermostat configuration."""
+    
+    # This handles the old format for backward compatibility
+    if not config_entry.options:
+        _LOGGER.error("No configuration found in config entry options")
+        return None
+
+    name = config_entry.title
+    unique_id = config_entry.entry_id
+    
+    try:
+        valve_entity_id = er.async_validate_entity_id(
+            registry, config_entry.options[CONF_VALVE_ENTITY_ID]
+        )
+        temp_sensor_entity_id = er.async_validate_entity_id(
+            registry, config_entry.options[CONF_TEMPERATURE_SENSOR_ENTITY_ID]
+        )
+    except (KeyError, ValueError) as err:
+        _LOGGER.error("Invalid entity configuration: %s", err)
+        return None
+
+    valve_position_mapping = config_entry.options.get(CONF_POSITION_MAPPING, {})
+    
+    # Validate valve position mapping
+    if not valve_position_mapping:
+        _LOGGER.error(
+            "Valve position mapping is empty! Please add your valve mappings."
+        )
+        return None
+
+    # Convert mapping keys to float and values to int
+    try:
+        valve_position_mapping = {
+            float(k): float(v) for k, v in valve_position_mapping.items()
+        }
+    except (ValueError, TypeError) as err:
+        _LOGGER.error("Invalid valve position mapping: %s", err)
+        return None
+
+    min_temp = config_entry.options.get(CONF_MIN_TEMP)
+    max_temp = config_entry.options.get(CONF_MAX_TEMP)
+    precision = config_entry.options.get(CONF_PRECISION)
+    min_cycle_duration = config_entry.options.get(CONF_MIN_CYCLE_DURATION)
+    valve_emergency_position = config_entry.options.get(CONF_VALVE_EMERGENCY_POSITION)
+    target_temp_step = config_entry.options.get(CONF_TARGET_TEMP_STEP)
+    unit = hass.config.units.temperature_unit
+    
     presets: dict[str, float] = {
         key: config_entry.options[value]
         for key, value in CONF_PRESETS.items()
         if value in config_entry.options
     }
 
-    # TODO add more and better validation
-
-    # Validate valve position mapping
-    if len(valve_position_mapping) == 0:
-        _LOGGER.error(
-            "Valve position mapping is empty! Please add your valve mappings."
-        )
-        return
-
-    # convert mapping keys to float and values to int
-    valve_position_mapping = {
-        float(k): float(v) for k, v in valve_position_mapping.items()
-    }
-
-    async_add_entities(
-        [
-            ValveControllerClimate(
-                hass=hass,
-                name=name,
-                unique_id=unique_id,
-                valve_entity_id=valve_entity_id,
-                valve_position_mapping=valve_position_mapping,
-                temp_sensor_entity_id=temp_sensor_entity_id,
-                min_temp=min_temp,
-                max_temp=max_temp,
-                precision=precision,
-                min_cycle_duration=min_cycle_duration,
-                valve_emergency_position=valve_emergency_position,
-                target_temp_step=target_temp_step,
-                unit=unit,
-                presets=presets,
-            )
-        ]
+    return ValveControllerClimate(
+        hass=hass,
+        name=name,
+        unique_id=unique_id,
+        valve_entity_id=valve_entity_id,
+        valve_position_mapping=valve_position_mapping,
+        temp_sensor_entity_id=temp_sensor_entity_id,
+        min_temp=min_temp,
+        max_temp=max_temp,
+        precision=precision,
+        min_cycle_duration=min_cycle_duration,
+        valve_emergency_position=valve_emergency_position,
+        target_temp_step=target_temp_step,
+        unit=unit,
+        presets=presets,
     )
 
 
