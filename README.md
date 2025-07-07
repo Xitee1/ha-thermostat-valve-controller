@@ -18,6 +18,26 @@ It's like the `generic thermostat` but for valves, not on/off heaters, and has m
 5. Navigate to [Helpers in HA or click this link](https://my.home-assistant.io/redirect/helpers/)
 6. Create a new helper and select `Thermostat Valve Controller`
 
+## Multiple Thermostats Support
+
+Starting from this version, you can configure multiple thermostats within a single integration entry. This provides better organization and reduces clutter in your integrations list when managing multiple rooms or zones.
+
+### How it works:
+1. **Integration Entry**: Create one integration entry with a descriptive name (e.g., "House Thermostats")
+2. **Add Thermostats**: Within that entry, add multiple thermostat configurations, each with:
+   - Unique thermostat name (e.g., "Living Room", "Bedroom")
+   - Individual temperature sensor
+   - Individual valve entity
+   - Independent valve position mappings
+   - Separate thermostat settings and presets
+3. **Entity Management**: Each thermostat becomes a separate climate entity with unique entity IDs
+
+### Benefits:
+- **Better Organization**: Group related thermostats under one integration entry
+- **Individual Control**: Each thermostat operates independently with its own settings
+- **Easier Management**: Add, edit, or remove thermostats through the options menu
+- **Backward Compatibility**: Existing single-thermostat setups continue to work unchanged
+
 ## Project start
 
 Based on: https://github.com/Xitee1/home-assistant-custom-components-devcontainers-template
@@ -35,17 +55,20 @@ Goal for this is:
 ### Todo
 
 - Need to check if device mapping does work (so that the thermostat entity of this integration gets linked to the existing valve device (if the valve integration provides a device))
-- Add support for multiple valves per thermostat
+- ~~Add support for multiple thermostats per config entry~~ ✅ **Completed**
+- Add support for multiple valves per thermostat  
 - Trigger valve position update after min cycle duration (if was skipped before beacuse of the delay)
 - When testing using input_numbers, the current temp will not load until it updates. Need more investigation for this in real world usage. According to the code it should update if it is available and on any state changes that are valid (not unavailable, ...) but that does not seem to happen in my testings
 
 ### Features (list incomplete)
 
 - Easy setup in GUI, no need to use YAML
+- **Multiple thermostats per config entry**: Configure multiple thermostat entities within a single integration entry for better organization
 - Allows manually defining valve positions based on temperature difference
 - Configurable presets
 - Emergency valve position: In case the temperature sensor fails, the valve will be set automatically to a specified position that keeps your room at an acceptable temperature
 - Minimum cycle duration: Set a minimum duration between valve position updates
+- **Backward compatibility**: Existing single-thermostat configurations continue to work without changes
 
 ### Ideas
 
