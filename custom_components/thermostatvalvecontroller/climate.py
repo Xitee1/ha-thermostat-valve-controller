@@ -286,7 +286,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
     def _async_valve_changed(self, event: Event[EventStateChangedData]) -> None:
         """Handle valve position state changes."""
         new_state = event.data["new_state"]
-        old_state = event.data["old_state"]
+        event.data["old_state"]
         if new_state is None:
             return
         # if old_state is None:
