@@ -86,8 +86,7 @@ async def async_setup_entry(
     valve_emergency_position: float | None = config_entry.options.get(
         CONF_VALVE_EMERGENCY_POSITION
     )
-    target_temp_step: float | None = config_entry.options.get(
-        CONF_TARGET_TEMP_STEP)
+    target_temp_step: float | None = config_entry.options.get(CONF_TARGET_TEMP_STEP)
     unit = hass.config.units.temperature_unit
     presets: dict[str, float] = {
         key: config_entry.options[value]
@@ -201,8 +200,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         self._pending_update_task: asyncio.Task | None = None
 
         self._valve_position_mapping = valve_position_mapping
-        self._sorted_valve_mapping_keys = sorted(
-            self._valve_position_mapping.keys())
+        self._sorted_valve_mapping_keys = sorted(self._valve_position_mapping.keys())
         self._min_valve_position = min(self._valve_position_mapping.values())
         self._max_valve_position = max(self._valve_position_mapping.values())
 
@@ -216,8 +214,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         # Add listener
         self.async_on_remove(
             async_track_state_change_event(
-                self.hass, [
-                    self._temp_sensor_entity_id], self._async_sensor_changed
+                self.hass, [self._temp_sensor_entity_id], self._async_sensor_changed
             )
         )
         self.async_on_remove(
@@ -248,15 +245,13 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         if self.hass.state is CoreState.running:
             _async_startup()
         else:
-            self.hass.bus.async_listen_once(
-                EVENT_HOMEASSISTANT_START, _async_startup)
+            self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _async_startup)
 
         # Restore previous state if available
         if (last_state := await self.async_get_last_state()) is not None:
             # Restore target temperature
             if last_state.attributes.get(ATTR_TEMPERATURE) is not None:
-                self._target_temp = float(
-                    last_state.attributes[ATTR_TEMPERATURE])
+                self._target_temp = float(last_state.attributes[ATTR_TEMPERATURE])
 
             # Restore HVAC mode
             if last_state.state is not None and last_state.state != STATE_UNKNOWN:
@@ -406,8 +401,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         """Set new target temperature."""
         if (temperature := kwargs.get(ATTR_TEMPERATURE)) is None:
             return
-        self._attr_preset_mode = self._presets_inv.get(
-            temperature, PRESET_NONE)
+        self._attr_preset_mode = self._presets_inv.get(temperature, PRESET_NONE)
         self._target_temp = temperature
         await self._async_control_heating(force=True)
         self.async_write_ha_state()
@@ -423,8 +417,9 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         try:
             current_valve_position = float(current_valve_state.state)
         except (ValueError, TypeError):
-            _LOGGER.error("Failed to parse valve position: %s",
-                          current_valve_state.state)
+            _LOGGER.error(
+                "Failed to parse valve position: %s", current_valve_state.state
+            )
             return
 
         # Check if we are in the min cycle duration, skip updating valve if so.
@@ -471,11 +466,14 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             # ...and do not perform further actions
             return
 
-        def calculate_valve_position(current_temp: float | None, target_temp: float | None) -> int:
+        def calculate_valve_position(
+            current_temp: float | None, target_temp: float | None
+        ) -> int:
             """Calculate the valve position based on the current and target temperature."""
             if not current_temp or not target_temp:
                 _LOGGER.warning(
-                    "Current or target temperature is None, setting valve to emergency position")
+                    "Current or target temperature is None, setting valve to emergency position"
+                )
                 return self._valve_emergency_position
 
             temp_difference = round(target_temp - current_temp, 1)
@@ -555,8 +553,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             self._pending_update_task = self.hass.async_create_task(
                 self._execute_deferred_update(delay)
             )
-            _LOGGER.debug(
-                "Scheduled deferred valve update in %s seconds", delay)
+            _LOGGER.debug("Scheduled deferred valve update in %s seconds", delay)
 
     async def _execute_deferred_update(self, delay: float) -> None:
         """Execute the deferred valve update after waiting for the delay."""

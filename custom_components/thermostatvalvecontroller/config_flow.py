@@ -52,8 +52,7 @@ VALVE_SCHEMA = vol.Schema(
             )
         ),
         vol.Required(CONF_VALVE_ENTITY_ID): selector.EntitySelector(
-            selector.EntitySelectorConfig(
-                domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN])
+            selector.EntitySelectorConfig(domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN])
         ),
         vol.Optional(CONF_MIN_CYCLE_DURATION): selector.DurationSelector(
             selector.DurationSelectorConfig(allow_negative=False)
