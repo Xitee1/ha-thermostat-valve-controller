@@ -472,7 +472,8 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             """Calculate the valve position based on the current and target temperature."""
             if not current_temp or not target_temp:
                 _LOGGER.warning(
-                    "Current or target temperature is None, setting valve to emergency position"
+                    "Current or target temperature is None, setting valve %s to emergency position",
+                    self._valve_entity_id,
                 )
                 return self._valve_emergency_position
 
