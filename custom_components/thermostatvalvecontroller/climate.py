@@ -161,6 +161,8 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         else:
             self._attr_preset_modes = [PRESET_NONE]
 
+        self._attr_preset_mode = PRESET_NONE
+
         self._attr_device_info = async_device_info_to_link_from_entity(
             hass,
             valve_entity_id,
