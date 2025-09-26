@@ -425,10 +425,11 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         if not force and self._min_cycle_duration:
             try:
                 # TODO ignore unavailable/unkown states
+                # Check if the valve has been in its current state for the minimum duration
                 long_enough = condition.state(
                     hass=self.hass,
                     entity=self._valve_entity_id,
-                    req_state=current_valve_position,
+                    req_state=current_valve_state.state,  # Use the actual state string
                     for_period=self._min_cycle_duration,
                 )
 
@@ -436,6 +437,8 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
                 long_enough = False
 
             if not long_enough:
+                _LOGGER.debug(
+                    "Valve adjustment blocked - minimum cycle duration not met")
                 return
 
         if self._hvac_mode == HVACMode.OFF:
