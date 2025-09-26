@@ -198,6 +198,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         self._saved_target_temp = next(iter(presets.values()), None)
         self._current_temp: float | None = None
         self._hvac_mode: HVACMode | None = None
+        self._pending_update_task: asyncio.Task | None = None
 
         self._valve_position_mapping = valve_position_mapping
         self._sorted_valve_mapping_keys = sorted(
@@ -443,8 +444,22 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
 
             if not long_enough:
                 _LOGGER.debug(
-                    "Valve adjustment blocked - minimum cycle duration not met")
+                    "Valve update blocked - minimum cycle duration not met, scheduling deferred update"
+                )
+                if self._pending_update_task and not self._pending_update_task.done():
+                    _LOGGER.debug(
+                        "A deferred update is already scheduled, not scheduling another"
+                    )
+                else:
+                    self._schedule_deferred_update()
                 return
+
+        # Cancel any pending deferred update since we're updating now
+        if self._pending_update_task and not self._pending_update_task.done():
+            self._pending_update_task.cancel()
+            _LOGGER.debug(
+                "Cancelled pending deferred update - executing immediate update"
+            )
 
         if self._hvac_mode == HVACMode.OFF:
             # Close valve if the hvac mode is off.
@@ -512,3 +527,50 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             {"entity_id": self._valve_entity_id, "value": position},
             blocking=True,
         )
+
+    def _schedule_deferred_update(self) -> None:
+        """Schedule a deferred valve update after the minimum cycle duration."""
+        # Calculate delay - get time since valve last changed
+        if self._min_cycle_duration:
+            valve_state = self.hass.states.get(self._valve_entity_id)
+
+            if valve_state and valve_state.last_changed:
+                # Calculate time elapsed since valve last changed
+                time_elapsed = (
+                    datetime.now(valve_state.last_changed.tzinfo)
+                    - valve_state.last_changed
+                )
+                time_remaining = self._min_cycle_duration - time_elapsed
+
+                # If there's still time remaining, schedule for that time
+                if time_remaining.total_seconds() > 0:
+                    delay = time_remaining.total_seconds()
+                else:
+                    # If time has already passed, schedule immediately
+                    delay = 0.1
+            else:
+                # Fallback to full cycle duration if we can't determine last change time
+                delay = self._min_cycle_duration.total_seconds()
+
+            self._pending_update_task = self.hass.async_create_task(
+                self._execute_deferred_update(delay)
+            )
+            _LOGGER.debug(
+                "Scheduled deferred valve update in %s seconds", delay)
+
+    async def _execute_deferred_update(self, delay: float) -> None:
+        """Execute the deferred valve update after waiting for the delay."""
+        try:
+            await asyncio.sleep(delay)
+            _LOGGER.debug("Executing deferred valve update")
+            await self._async_control_heating()
+        except asyncio.CancelledError:
+            _LOGGER.debug("Deferred valve update was cancelled")
+        finally:
+            self._pending_update_task = None
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Cancel any pending deferred updates when entity is removed."""
+        if self._pending_update_task and not self._pending_update_task.done():
+            self._pending_update_task.cancel()
+        await super().async_will_remove_from_hass()
