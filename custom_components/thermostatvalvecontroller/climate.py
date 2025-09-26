@@ -415,7 +415,8 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             current_valve_position = float(current_valve_state.state)
         except (ValueError, TypeError):
             _LOGGER.error(
-                "Failed to parse valve position: %s", current_valve_state.state
+                "Failed to update the valve position because parsing of the current state has failed: %s",
+                current_valve_state.state,
             )
             return
 
