@@ -1,8 +1,9 @@
 """Climate platform for the Thermostat Valve Controller integration."""
 
+import asyncio
 import logging
 import math
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from homeassistant.components.climate import (
     ClimateEntity,
@@ -75,8 +76,12 @@ async def async_setup_entry(
     min_temp: float | None = config_entry.options.get(CONF_MIN_TEMP)
     max_temp: float | None = config_entry.options.get(CONF_MAX_TEMP)
     precision: float | None = config_entry.options.get(CONF_PRECISION)
-    min_cycle_duration: timedelta | None = config_entry.options.get(
-        CONF_MIN_CYCLE_DURATION
+    min_cycle_duration: timedelta | None = (
+        timedelta(**min_cycle_duration_dict)
+        if (
+            min_cycle_duration_dict := config_entry.options.get(CONF_MIN_CYCLE_DURATION)
+        )
+        else None
     )
     valve_emergency_position: float | None = config_entry.options.get(
         CONF_VALVE_EMERGENCY_POSITION
