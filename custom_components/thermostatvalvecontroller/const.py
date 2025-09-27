@@ -1,6 +1,6 @@
 """Constants for the Thermostat Valve Controller integration."""
 
-from homeassistant.components.climate import (
+from homeassistant.components.climate.const import (
     PRESET_ACTIVITY,
     PRESET_AWAY,
     PRESET_COMFORT,
