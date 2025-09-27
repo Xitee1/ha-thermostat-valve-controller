@@ -18,6 +18,10 @@ It's like the `generic thermostat` but for valves, not on/off heaters, and has m
 5. Navigate to [Helpers in HA or click this link](https://my.home-assistant.io/redirect/helpers/)
 6. Create a new helper and select `Thermostat Valve Controller`
 
+*When the integration eventually gets added to HACS repo*:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Xitee1&repository=https%3A%2F%2Fgithub.com%2FXitee1%2Fha-thermostat-valve-controller&category=integration)
+
 ## Project start
 
 Based on: https://github.com/Xitee1/home-assistant-custom-components-devcontainers-template
