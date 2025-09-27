@@ -2,5 +2,9 @@
     "files.associations": {
         "*.yaml": "home-assistant"
     },
-    "FSharp.suggestGitignore": false
+    "FSharp.suggestGitignore": false,
+    "editor.formatOnSave": true,
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    }
 }
