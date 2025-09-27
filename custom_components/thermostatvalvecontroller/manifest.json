@@ -7,6 +7,7 @@
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/Xitee1/ha-thermostat-valve-controller",
+  "issue_tracker": "https://github.com/Xitee1/ha-thermostat-valve-controller/issues",
   "homekit": {},
   "integration_type": "helper",
   "iot_class": "local_push",
