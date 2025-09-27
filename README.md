@@ -1,4 +1,4 @@
-# Home Assistant Thermostat Valve Controller (WIP)
+# Home Assistant Thermostat Valve Controller
 
 Ever had the problem that your thermostat did not heat the way you wanted it to?<br>
 It either did not open the valve enough or too much or had a high delay?<br>
