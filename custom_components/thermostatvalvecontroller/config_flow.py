@@ -49,7 +49,11 @@ VALVE_SCHEMA = vol.Schema(
         ),
         vol.Optional(CONF_PRECISION, default=0.1): selector.NumberSelector(
             selector.NumberSelectorConfig(
-                mode=selector.NumberSelectorMode.BOX, step=0.01
+                mode=selector.NumberSelectorMode.BOX,
+                min=0.0,
+                max=5,
+                step=0.01,
+                unit_of_measurement=DEGREE,
             )
         ),
         vol.Required(CONF_VALVE_ENTITY_ID): selector.EntitySelector(
