@@ -36,6 +36,7 @@ from .const import (
     CONF_VALVE_ENTITY_ID,
     CONF_VALVE_EMERGENCY_POSITION,
     CONF_MIN_CYCLE_DURATION,
+    CONF_MIN_TEMP_CHANGE_STEP,
     DOMAIN,
 )
 
@@ -58,6 +59,15 @@ VALVE_SCHEMA = vol.Schema(
             selector.DurationSelectorConfig(allow_negative=False)
         ),
         vol.Optional(CONF_VALVE_EMERGENCY_POSITION, default=25): vol.Coerce(float),
+        vol.Optional(CONF_MIN_TEMP_CHANGE_STEP, default=0): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                mode=selector.NumberSelectorMode.BOX,
+                min=0,
+                max=5,
+                step=0.01,
+                unit_of_measurement=DEGREE,
+            )
+        ),
     }
 )
 

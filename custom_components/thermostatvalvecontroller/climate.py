@@ -49,6 +49,7 @@ from .const import (
     CONF_VALVE_ENTITY_ID,
     CONF_MIN_CYCLE_DURATION,
     CONF_VALVE_EMERGENCY_POSITION,
+    CONF_MIN_TEMP_CHANGE_STEP,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -87,6 +88,7 @@ async def async_setup_entry(
         CONF_VALVE_EMERGENCY_POSITION
     )
     target_temp_step: float | None = config_entry.options.get(CONF_TARGET_TEMP_STEP)
+    min_temp_change_step: float = config_entry.options.get(CONF_MIN_TEMP_CHANGE_STEP, 0)
     unit = hass.config.units.temperature_unit
     presets: dict[str, float] = {
         key: config_entry.options[value]
@@ -123,6 +125,7 @@ async def async_setup_entry(
                 min_cycle_duration=min_cycle_duration,
                 valve_emergency_position=valve_emergency_position,
                 target_temp_step=target_temp_step,
+                min_temp_change_step=min_temp_change_step,
                 unit=unit,
                 presets=presets,
             )
@@ -151,6 +154,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         min_cycle_duration: timedelta | None,
         valve_emergency_position: float | None,
         target_temp_step: float | None,
+        min_temp_change_step: float,
         unit: UnitOfTemperature,
         presets: dict[str, float],
     ) -> None:
@@ -198,6 +202,8 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         self._current_temp: float | None = None
         self._hvac_mode: HVACMode | None = None
         self._pending_update_task: asyncio.Task | None = None
+        self._min_temp_change_step = min_temp_change_step
+        self._last_valve_update_temp: float | None = None
 
         self._valve_position_mapping = valve_position_mapping
         self._sorted_valve_mapping_keys = sorted(self._valve_position_mapping.keys())
@@ -457,6 +463,23 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
                     self._schedule_deferred_update()
                 return
 
+        # Check if temperature changed enough to allow valve position update
+        if (
+            not force
+            and self._min_temp_change_step > 0
+            and self._current_temp is not None
+            and self._last_valve_update_temp is not None
+        ):
+            temp_difference = abs(self._current_temp - self._last_valve_update_temp)
+
+            if temp_difference < self._min_temp_change_step:
+                _LOGGER.debug(
+                    "Temperature change (%.2f°C) is below threshold (%.2f°C), skipping valve update",
+                    temp_difference,
+                    self._min_temp_change_step,
+                )
+                return
+
         # Cancel any pending deferred update since we're updating now
         if self._pending_update_task and not self._pending_update_task.done():
             self._pending_update_task.cancel()
@@ -519,8 +542,9 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             #       (maybe this check here isn't even neccessary in this case).
             return
 
-        # Set the new valve position
+        # Set the new valve position and set the last update temp
         await self._set_valve_position(new_valve_position)
+        self._last_valve_update_temp = self._current_temp
 
     async def _set_valve_position(self, position: float) -> None:
         """Set the valve position using number.set_value service."""

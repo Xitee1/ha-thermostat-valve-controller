@@ -17,6 +17,7 @@ CONF_PRECISION = "precision"
 CONF_VALVE_ENTITY_ID = "valve_entity_id"
 CONF_MIN_CYCLE_DURATION = "min_cycle_duration"
 CONF_VALVE_EMERGENCY_POSITION = "valve_emergency_position"
+CONF_MIN_TEMP_CHANGE_STEP = "min_temp_change_step"
 
 # Valve Positions
 CONF_POSITION_MAPPING = "position_mapping"
