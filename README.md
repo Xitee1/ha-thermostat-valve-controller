@@ -38,6 +38,7 @@ Goal for this is:
 ### Features (list incomplete)
 
 - Easy setup in GUI, no need to use YAML
+- Multiple Valve Support: Control multiple valves/radiators in the same room with a single thermostat
 - Allows manually defining valve positions based on temperature difference
 - Configurable presets
 - Emergency valve position: In case the temperature sensor fails, the valve will be set automatically to a specified position that keeps your room at an acceptable temperature
