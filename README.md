@@ -8,6 +8,8 @@ Then this integration is for you!<br>
 Based on a temperature difference between current and target, you can define your own valve positions easily.<br>
 It's like the `generic thermostat` but for valves, not on/off heaters, and has many additional [features](#features-list-incomplete).
 
+This integration was originally based on my AppDaemon script, which is now archived: https://github.com/Xitee1/AD-ThermostatController
+This project uses my Home Assistant custom components template with dev containers: https://github.com/Xitee1/home-assistant-custom-components-devcontainers-template
 
 ## Installation
 ### HACS
@@ -18,24 +20,10 @@ It's like the `generic thermostat` but for valves, not on/off heaters, and has m
 5. Navigate to [Helpers in HA or click this link](https://my.home-assistant.io/redirect/helpers/)
 6. Create a new helper and select `Thermostat Valve Controller`
 
-## Project start
-
-Based on: https://github.com/Xitee1/home-assistant-custom-components-devcontainers-template
-
-Based on my AppDaemon script: https://github.com/Xitee1/AD-ThermostatController
-
-Because I now have more thermostats and the appdaemon version requires you to misuse the generic_thermostat integration which just doesn't work good when used like this and all the manual work that is needed, I'm creating an integration for this.
-
-Goal for this is:
-
-- Configuring everything trough the GUI (temp sensor, valve, min/max, heating steps)
-- Also being able to configure heating presets
-- The integration creates a new climate entity (no need to use generic_thermostat and helpers) and links it to the existing device (better visibility and room linking? - need to find that out)
-
-### Todo
+## Todo
 - When testing using input_numbers, the current temp will not load until it updates. Need more investigation for this in real world usage. According to the code it should update if it is available and on any state changes that are valid (not unavailable, ...) but that does not seem to happen in my testings
 
-### Features (list incomplete)
+### Features (list is incomplete)
 
 - Easy setup in GUI, no need to use YAML
 - Allows manually defining valve positions based on temperature difference
