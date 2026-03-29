@@ -299,7 +299,18 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
     async def _async_sensor_changed(self, event: Event[EventStateChangedData]) -> None:
         """Handle temperature changes."""
         new_state = event.data["new_state"]
-        if new_state is None or new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+        if new_state is None:
+            return
+
+        if new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+            _LOGGER.warning(
+                "Temperature sensor %s is %s, applying emergency valve position",
+                self._sensor_entity_id,
+                new_state.state,
+            )
+            self._current_temp = None
+            await self._async_control_heating(force=True)
+            self.async_write_ha_state()
             return
 
         self._async_update_temp(new_state)
