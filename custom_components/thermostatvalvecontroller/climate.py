@@ -380,6 +380,9 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             if not valve_state:
                 continue
 
+            if valve_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+                continue
+
             any_valve_available = True
 
             try:
@@ -462,10 +465,11 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         """Control the valve position."""
         current_valve_state = self.hass.states.get(self._valve_entity_id)
 
-        if current_valve_state is None:
+        if current_valve_state is None or current_valve_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
             _LOGGER.error(
-                "Failed to update the valve position because entity %s is not available",
+                "Failed to update the valve position because entity %s is not available (state: %s)",
                 self._valve_entity_id,
+                current_valve_state.state if current_valve_state else "missing",
             )
             return
 
@@ -481,7 +485,6 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         # Check if we are in the min cycle duration, skip updating valve if so.
         if not force and self._min_cycle_duration:
             try:
-                # TODO ignore unavailable/unkown states
                 # Check if the valve has been in its current state for the minimum duration
                 long_enough = condition.state(
                     hass=self.hass,
