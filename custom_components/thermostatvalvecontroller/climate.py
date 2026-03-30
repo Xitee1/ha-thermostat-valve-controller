@@ -70,22 +70,10 @@ async def async_setup_entry(
         registry, config_entry.options[CONF_VALVE_ENTITY_ID]
     )
 
-    # Handle additional valve entities
-    additional_valve_entity_ids: list[str] = []
-    if CONF_ADDITIONAL_VALVE_ENTITY_IDS in config_entry.options:
-        additional_valve_ids = config_entry.options[CONF_ADDITIONAL_VALVE_ENTITY_IDS]
-        if additional_valve_ids:
-            # Handle both list and single entity ID formats
-            if isinstance(additional_valve_ids, list):
-                additional_valve_entity_ids = [
-                    er.async_validate_entity_id(registry, entity_id)
-                    for entity_id in additional_valve_ids
-                ]
-            else:
-                # Single entity ID provided
-                additional_valve_entity_ids = [
-                    er.async_validate_entity_id(registry, additional_valve_ids)
-                ]
+    additional_valve_entity_ids = [
+        er.async_validate_entity_id(registry, entity_id)
+        for entity_id in config_entry.options.get(CONF_ADDITIONAL_VALVE_ENTITY_IDS, [])
+    ]
 
     valve_position_mapping: dict[str, float] = config_entry.options.get(
         CONF_POSITION_MAPPING, {}
@@ -262,10 +250,10 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             ):
                 self._async_update_temp(sensor_state)
 
-            valve_state = self.hass.states.get(self._valve_entity_id)
-            if valve_state and valve_state.state not in (
-                STATE_UNAVAILABLE,
-                STATE_UNKNOWN,
+            if any(
+                (vs := self.hass.states.get(vid))
+                and vs.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN)
+                for vid in self._all_valve_entity_ids
             ):
                 self.hass.async_create_task(
                     self._check_valve_initial_state(), eager_start=True
@@ -337,7 +325,10 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
     @property
     def available(self) -> bool:
         """Return climate group availability."""
-        return self.hass.states.get(self._valve_entity_id) is not None
+        return any(
+            self.hass.states.get(vid) is not None
+            for vid in self._all_valve_entity_ids
+        )
 
     # HVAC Mode
     @property
@@ -576,12 +567,18 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         new_valve_position = calculate_valve_position(
             current_temp=self._current_temp, target_temp=self._target_temp
         )
-        if new_valve_position == current_valve_position:
-            # No need to update the valve position if it is already the same
-            # TODO maybe add an option to force update it no matter the current state
-            #       (in case the thermostat did not report a state update and the actual value is different).
-            #       Need to check if that would even work or if HA would ignore it if we set the same state again
-            #       (maybe this check here isn't even neccessary in this case).
+        # Skip update only if all valves are already at the target position
+        all_valves_at_target = True
+        for vid in self._all_valve_entity_ids:
+            vs = self.hass.states.get(vid)
+            try:
+                if vs is None or float(vs.state) != new_valve_position:
+                    all_valves_at_target = False
+                    break
+            except (ValueError, TypeError):
+                all_valves_at_target = False
+                break
+        if all_valves_at_target:
             return
 
         # Set the new valve position and set the last update temp
@@ -592,16 +589,26 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         """Set the valve position using number.set_value service."""
         _LOGGER.debug("Setting valve position to %s", position)
 
-        # Set position for all valves (main + additional)
-        for valve_entity_id in self._all_valve_entity_ids:
+        async def _set_single_valve(valve_entity_id: str) -> None:
             domain = valve_entity_id.split(".", 1)[0]
+            try:
+                await self.hass.services.async_call(
+                    domain,
+                    "set_value",
+                    {"entity_id": valve_entity_id, "value": position},
+                    blocking=True,
+                )
+            except Exception:
+                _LOGGER.error(
+                    "Failed to set valve position for %s to %s",
+                    valve_entity_id,
+                    position,
+                    exc_info=True,
+                )
 
-            await self.hass.services.async_call(
-                domain,
-                "set_value",
-                {"entity_id": valve_entity_id, "value": position},
-                blocking=True,
-            )
+        await asyncio.gather(
+            *(_set_single_valve(vid) for vid in self._all_valve_entity_ids)
+        )
 
     def _schedule_deferred_update(self) -> None:
         """Schedule a deferred valve update after the minimum cycle duration."""
