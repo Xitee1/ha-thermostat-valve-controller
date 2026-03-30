@@ -70,6 +70,7 @@ async def async_setup_entry(
         registry, config_entry.options[CONF_VALVE_ENTITY_ID]
     )
 
+    # Handle additional valve entities
     additional_valve_entity_ids = [
         er.async_validate_entity_id(registry, entity_id)
         for entity_id in config_entry.options.get(CONF_ADDITIONAL_VALVE_ENTITY_IDS, [])
@@ -568,6 +569,10 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
             current_temp=self._current_temp, target_temp=self._target_temp
         )
         # Skip update only if all valves are already at the target position
+        # TODO maybe add an option to force update it no matter the current state
+        #       (in case the thermostat did not report a state update and the actual value is different).
+        #       Need to check if that would even work or if HA would ignore it if we set the same state again
+        #       (maybe this check here isn't even neccessary in this case).
         all_valves_at_target = True
         for vid in self._all_valve_entity_ids:
             vs = self.hass.states.get(vid)
@@ -589,6 +594,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         """Set the valve position using number.set_value service."""
         _LOGGER.debug("Setting valve position to %s", position)
 
+        # Set position for all valves (main + additional)
         async def _set_single_valve(valve_entity_id: str) -> None:
             domain = valve_entity_id.split(".", 1)[0]
             try:
