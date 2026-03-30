@@ -306,7 +306,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
                 new_state.state if new_state else "removed",
             )
             self._current_temp = None
-            await self._async_control_heating(force=True)
+            await self._async_control_heating()
             self.async_write_ha_state()
             return
 
