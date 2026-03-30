@@ -300,6 +300,14 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         """Handle temperature changes."""
         new_state = event.data["new_state"]
         if new_state is None or new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+            _LOGGER.warning(
+                "Temperature sensor %s is %s, applying emergency valve position",
+                self._sensor_entity_id,
+                new_state.state if new_state else "removed",
+            )
+            self._current_temp = None
+            await self._async_control_heating()
+            self.async_write_ha_state()
             return
 
         self._async_update_temp(new_state)
@@ -370,6 +378,9 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         for valve_entity_id in self._all_valve_entity_ids:
             valve_state = self.hass.states.get(valve_entity_id)
             if not valve_state:
+                continue
+
+            if valve_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
                 continue
 
             any_valve_available = True
@@ -454,10 +465,11 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         """Control the valve position."""
         current_valve_state = self.hass.states.get(self._valve_entity_id)
 
-        if current_valve_state is None:
+        if current_valve_state is None or current_valve_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
             _LOGGER.error(
-                "Failed to update the valve position because entity %s is not available",
+                "Failed to update the valve position because entity %s is not available (state: %s)",
                 self._valve_entity_id,
+                current_valve_state.state if current_valve_state else "missing",
             )
             return
 
@@ -473,7 +485,6 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         # Check if we are in the min cycle duration, skip updating valve if so.
         if not force and self._min_cycle_duration:
             try:
-                # TODO ignore unavailable/unkown states
                 # Check if the valve has been in its current state for the minimum duration
                 long_enough = condition.state(
                     hass=self.hass,
