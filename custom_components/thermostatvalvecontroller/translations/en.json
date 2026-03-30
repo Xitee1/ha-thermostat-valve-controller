@@ -7,6 +7,7 @@
                     "temperature_sensor_entity_id": "Temperature sensor entity",
                     "precision": "Temperature sensor precision",
                     "valve_entity_id": "Thermostat valve entity",
+                    "additional_valve_entity_ids": "Additional valve entities (optional)",
                     "valve_emergency_position": "Emergency valve position",
                     "min_cycle_duration": "Minimum cycle duration",
                     "min_temp_change_step": "Minimum temperature change step"
@@ -15,6 +16,7 @@
                     "temperature_sensor_entity_id": "Entity ID of the temperature sensor",
                     "precision": "Precision of the temperature sensor. Usually this is 0.1 or 1. Some sensors might have a higher accuracity and use 0.01",
                     "valve_entity_id": "Entity ID of the valve position input",
+                    "additional_valve_entity_ids": "Additional valve entities to control (all valves will be set to the same position as the main valve)",
                     "valve_emergency_position": "The emergency valve position is used when the temperature sensor is not available. Set this to a value that does not make the arctis or a sauna club out of your room. Leave empty to stop controlling the valve altogether if the temperature sensor unavailable (NOT RECOMMENDED if you don't externally handle this problem because of said reasons).",
                     "min_cycle_duration": "Minimum cycle duration in seconds. Useful to prevent the valve from moving too often, reducing battery life.",
                     "min_temp_change_step": "Minimum temperature change in °C required before updating valve position. For example, 0.2 means the temperature must change by at least 0.2°C from the last update. Set to 0 to disable this feature and update on every temperature change. Useful to prevent unnecessary valve movements when temperature fluctuates by small amounts."
@@ -70,6 +72,7 @@
                     "temperature_sensor_entity_id": "Temperature sensor entity",
                     "precision": "Precision of the temperature sensor",
                     "valve_entity_id": "Thermostat valve entity",
+                    "additional_valve_entity_ids": "Additional valve entities (optional)",
                     "valve_emergency_position": "Emergency valve position",
                     "min_cycle_duration": "Minimum cycle duration",
                     "min_temp_change_step": "Minimum temperature change step"
@@ -78,6 +81,7 @@
                     "temperature_sensor_entity_id": "Entity ID of the temperature sensor",
                     "precision": "Precision of the temperature sensor. Do not use any other numbers than 0 and 1 (e.g. 0.5 would be wrong). This is used for displaying the current temperature on the thermostat entity and the graphs. Without this settings these numbers would get rounded (to the next integer by HA defaults). Usually this is 0.1 for most temperature sensors. Some sensors might have a higher accuracity and use 0.01. If it only reads full degrees, set it to 1.",
                     "valve_entity_id": "Entity ID of the valve position input",
+                    "additional_valve_entity_ids": "Additional valve entities to control (all valves will be set to the same position as the main valve)",
                     "valve_emergency_position": "The emergency valve position is used when the temperature sensor is not available. Set this to a value that does not make the arctis or a sauna club out of your room. Leave empty to stop controlling the valve altogether if the temperature sensor unavailable (NOT RECOMMENDED if you don't externally handle this problem because of said reasons).",
                     "min_cycle_duration": "Minimum cycle duration in seconds. Useful to prevent the valve from moving too often, reducing battery life.",
                     "min_temp_change_step": "Minimum temperature change in °C required before updating valve position. For example, 0.2 means the temperature must change by at least 0.2°C from the last update. Set to 0 to disable this feature and update on every temperature change. Useful to prevent unnecessary valve movements when temperature fluctuates by small amounts."
