@@ -302,7 +302,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         if new_state is None or new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
             _LOGGER.warning(
                 "Temperature sensor %s is %s, applying emergency valve position",
-                self._sensor_entity_id,
+                self._temp_sensor_entity_id,
                 new_state.state if new_state else "removed",
             )
             self._current_temp = None
