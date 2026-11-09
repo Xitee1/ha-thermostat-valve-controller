@@ -25,9 +25,6 @@ Requires Home Assistant 2026.11 or newer.
 4. Navigate to [Helpers in HA or click this link](https://my.home-assistant.io/redirect/helpers/)
 5. Create a new helper and select `Thermostat Valve Controller`
 
-## Todo
-- When testing using input_numbers, the current temp will not load until it updates. Need more investigation for this in real world usage. According to the code it should update if it is available and on any state changes that are valid (not unavailable, ...) but that does not seem to happen in my testings
-
 ### Features (list is incomplete)
 
 - Easy setup in GUI, no need to use YAML
