@@ -146,7 +146,6 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
     """Representation of a Thermostat Valve Controller."""
 
     _attr_should_poll = False
-    _attr_has_entity_name = True
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
 
     def __init__(
