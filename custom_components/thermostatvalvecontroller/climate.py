@@ -30,7 +30,7 @@ from homeassistant.core import (
 )
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
-from homeassistant.helpers.device import async_device_info_to_link_from_entity
+from homeassistant.helpers.device import async_entity_id_to_device
 from homeassistant.helpers.event import (
     async_track_state_change_event,
 )
@@ -181,7 +181,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
 
         self._attr_preset_mode = PRESET_NONE
 
-        self._attr_device_info = async_device_info_to_link_from_entity(
+        self.device_entry = async_entity_id_to_device(
             hass,
             valve_entity_id,
         )
