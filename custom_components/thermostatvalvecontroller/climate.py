@@ -200,7 +200,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         self._attr_target_temperature_step = (
             target_temp_step if target_temp_step is not None else precision
         )
-        self._attr_temperature_unit = unit
+        self._attr_native_temperature_unit = unit
 
         # Other values
         self._valve_entity_id = valve_entity_id
@@ -302,7 +302,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         if new_state is None or new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
             _LOGGER.warning(
                 "Temperature sensor %s is %s, applying emergency valve position",
-                self._sensor_entity_id,
+                self._temp_sensor_entity_id,
                 new_state.state if new_state else "removed",
             )
             self._current_temp = None
@@ -405,7 +405,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
 
     # Current temperature
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         """Return the current temperature."""
         return self._current_temp
 
@@ -447,7 +447,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
 
     # Target temperature
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         """Return the temperature we try to reach."""
         return self._target_temp
 
