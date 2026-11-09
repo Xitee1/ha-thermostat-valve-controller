@@ -12,13 +12,18 @@ This integration was originally based on my AppDaemon script, which is now archi
 This project uses my Home Assistant custom components template with dev containers: https://github.com/Xitee1/home-assistant-custom-components-devcontainers-template
 
 ## Installation
-### HACS
-1. Open the custom repository dialog in HACS ([Instructions](https://www.hacs.xyz/docs/faq/custom_repositories/))
-2. Enter this repository URL into the `Repository` field and select `Integration` as type.<br>`https://github.com/Xitee1/ha-thermostat-valve-controller`
-3. Search for `Thermostat Valve Controller` in HACS and install the integration
-4. Restart Home Assistant
-5. Navigate to [Helpers in HA or click this link](https://my.home-assistant.io/redirect/helpers/)
-6. Create a new helper and select `Thermostat Valve Controller`
+### Marketplace
+Requires Home Assistant 2026.11 or newer.
+
+[![Open your Home Assistant instance and open a repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=Xitee1&repository=ha-thermostat-valve-controller&category=integration)
+
+1. Click the button above, or add the repository manually ([Instructions](https://www.home-assistant.io/integrations/marketplace/)):
+   1. Go to **Settings** > **Marketplace** and select **Add from link** in the upper-right corner
+   2. Enter this repository URL under **GitHub link** and select **Add**<br>`https://github.com/Xitee1/ha-thermostat-valve-controller`
+2. Open `Thermostat Valve Controller` in the Marketplace and select **Install**
+3. If Home Assistant asks for a restart (**Settings** > **System** > **Repairs**), restart Home Assistant
+4. Navigate to [Helpers in HA or click this link](https://my.home-assistant.io/redirect/helpers/)
+5. Create a new helper and select `Thermostat Valve Controller`
 
 ## Todo
 - When testing using input_numbers, the current temp will not load until it updates. Need more investigation for this in real world usage. According to the code it should update if it is available and on any state changes that are valid (not unavailable, ...) but that does not seem to happen in my testings
