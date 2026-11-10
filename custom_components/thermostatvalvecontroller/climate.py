@@ -241,7 +241,7 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
         )
 
         @callback
-        def _async_startup(_: Event | None = None) -> None:
+        def _async_startup(event: Event | None = None) -> None:
             """Init on startup."""
             sensor_state = self.hass.states.get(self._temp_sensor_entity_id)
             if sensor_state and sensor_state.state not in (
@@ -249,6 +249,11 @@ class ValveControllerClimate(ClimateEntity, RestoreEntity):
                 STATE_UNKNOWN,
             ):
                 self._async_update_temp(sensor_state)
+                # Called by EVENT_HOMEASSISTANT_START: async_added_to_hass has already
+                # written the state, so write it again to publish the temperature.
+                # Called directly: async_added_to_hass writes the state afterwards.
+                if event is not None:
+                    self.async_write_ha_state()
 
             if any(
                 (vs := self.hass.states.get(vid))
