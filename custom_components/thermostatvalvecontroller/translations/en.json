@@ -35,12 +35,12 @@
             "presets": {
                 "title": "Temperature presets",
                 "data": {
-                  "home_temp": "[%key:common::state::home%]",
-                  "away_temp": "[%key:common::state::not_home%]",
-                  "comfort_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::comfort%]",
-                  "eco_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::eco%]",
-                  "sleep_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::sleep%]",
-                  "activity_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::activity%]"
+                  "home_temp": "Home",
+                  "away_temp": "Away",
+                  "comfort_temp": "Comfort",
+                  "eco_temp": "Eco",
+                  "sleep_temp": "Sleep",
+                  "activity_temp": "Activity"
                 }
             },
             "thermostat": {
@@ -97,12 +97,12 @@
             "presets": {
                 "title": "Temperature presets",
                 "data": {
-                  "home_temp": "[%key:common::state::home%]",
-                  "away_temp": "[%key:common::state::not_home%]",
-                  "comfort_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::comfort%]",
-                  "eco_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::eco%]",
-                  "sleep_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::sleep%]",
-                  "activity_temp": "[%key:component::climate::entity_component::_::state_attributes::preset_mode::state::activity%]"
+                  "home_temp": "Home",
+                  "away_temp": "Away",
+                  "comfort_temp": "Comfort",
+                  "eco_temp": "Eco",
+                  "sleep_temp": "Sleep",
+                  "activity_temp": "Activity"
                 }
             },
             "thermostat": {

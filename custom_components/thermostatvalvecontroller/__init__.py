@@ -9,20 +9,13 @@ from homeassistant.core import HomeAssistant
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Thermostat Valve Controller from a config entry."""
-    # TODO Optionally store an object for your platforms to access
-    # entry.runtime_data = ...
-
-    # TODO Optionally validate config entry options before setting up platform
-
     await hass.config_entries.async_forward_entry_setups(entry, (Platform.CLIMATE,))
 
-    # TODO Remove if the integration does not have an options flow
     entry.async_on_unload(entry.add_update_listener(config_entry_update_listener))
 
     return True
 
 
-# TODO Remove if the integration does not have an options flow
 async def config_entry_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Update listener, called when the config entry options are changed."""
     await hass.config_entries.async_reload(entry.entry_id)
