@@ -2,6 +2,7 @@
     "config": {
         "step": {
             "user": {
+                "description": "Create a thermostat that sets the position of one or more radiator valves based on the difference between the current and the target temperature.",
                 "data": {
                     "name": "Thermostat Name",
                     "temperature_sensor_entity_id": "Temperature sensor entity",
